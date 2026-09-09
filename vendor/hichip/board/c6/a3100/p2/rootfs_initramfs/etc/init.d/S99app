@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# Start the preinit
+#
+
+XGAME_MNT_DIR=""
+wait_for_media_ready()
+{
+	while true
+	do
+		for subdir in $(ls /media); do
+			if [ -e /media/$subdir/rootfs/bin/busybox ] ; then
+				XGAME_MNT_DIR=$subdir
+				return
+			fi
+		done
+
+		sleep 0.5
+	done
+}
+
+wait_for_media_ready
+
+#mount
+echo "mount --bind /media/${XGAME_MNT_DIR} /mnt/sdcard"
+mount --bind /media/${XGAME_MNT_DIR} /mnt/sdcard
+echo "mount --bind /media/${XGAME_MNT_DIR}/rootfs/lib /lib"
+mount --bind /media/${XGAME_MNT_DIR}/rootfs/lib /lib
+echo "mount --bind /media/${XGAME_MNT_DIR}/rootfs/usr /usr"
+mount --bind /media/${XGAME_MNT_DIR}/rootfs/usr /usr
+echo "mount --bind /media/${XGAME_MNT_DIR}/rootfs/bin /bin"
+mount --bind /media/${XGAME_MNT_DIR}/rootfs/bin /bin
+echo "mount --bind /media/${XGAME_MNT_DIR}/rootfs/sbin /sbin"
+mount --bind /media/${XGAME_MNT_DIR}/rootfs/sbin /sbin
+echo "mount --bind /media/${XGAME_MNT_DIR}/rootfs/etc /etc"
+mount --bind /media/${XGAME_MNT_DIR}/rootfs/etc /etc
+echo "mount --bind /media/${XGAME_MNT_DIR}/rootfs/hcdemo_files /hcdemo_files"
+mount --bind /media/${XGAME_MNT_DIR}/rootfs/hcdemo_files /hcdemo_files
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/mnt/sdcard/cubegm/lib:/mnt/sdcard/cubegm/usr/lib
+/mnt/sdcard/cubegm/icube &

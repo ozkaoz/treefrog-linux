@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Start the preinit
+#
+
+partiton_name="yaffs2"
+
+function get_partiton_from_label()
+{
+    local block_no=""
+
+    block_no=`cat /proc/mtd | grep $1 | awk 'NR==1{print $1}' | grep -o "[0-9]"`
+    printf "mtdblock%s" $block_no
+}
+
+#mount data
+part_data_name=`get_partiton_from_label ${partiton_name}`
+echo "part_data_name=${part_data_name}"
+
+mount -t tmpfs tmpfs /mnt
+mkdir -p /mnt/yaffs2
+mount -t yaffs2 -o inband-tags,lazy-loading-on /dev/${part_data_name} /mnt/yaffs2
+#if [ $? -ne 0 ] ; then
+#	mount -t yaffs2 -o forceformat,inband-tags /dev/${part_data_name} /mnt/yaffs2
+#fi

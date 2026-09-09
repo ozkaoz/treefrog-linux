@@ -1,0 +1,276 @@
+#include "hc16xx-common.dtsi"
+#include "hc16xx-db-b3100-v20-avp.dtsi"
+
+#define CONFIG_AVP_MEMORY_SIZE (HCRTOS_SYSMEM_SIZE + HCRTOS_MMZ0_SIZE + HCRTOS_MMZ1_SIZE)
+#define CONFIG_FRAMEBUFFER_STATIC_MEM_SIZE (0)
+#define CONFIG_LINUX_MEMORY_SIZE (CONFIG_MEMORY_SIZE - CONFIG_AVP_MEMORY_SIZE - CONFIG_FRAMEBUFFER_STATIC_MEM_SIZE)
+#define CONFIG_LINUX_MEMORY_OFFSET (0)
+#define CONFIG_FRAMEBUFFER_STATIC_PHYS (CONFIG_LINUX_MEMORY_OFFSET + CONFIG_LINUX_MEMORY_SIZE)
+
+/{
+	#address-cells = <1>;
+	#size-cells = <1>;
+	memory {
+		device_type = "memory";
+		reg = <CONFIG_LINUX_MEMORY_OFFSET CONFIG_LINUX_MEMORY_SIZE>;
+	};
+
+	chosen: chosen {
+		name = "chosen";
+		stdout-path = "serial0:115200n8";
+		bootargs = "root=/dev/mtdblock5 rw rootfstype=squashfs init=/linuxrc console=ttyS0,115200N8 earlycon=uart8250,mmio,0x18818300,115200n8 no_console_suspend noirqdebug";
+		//bootargs = "root=/dev/ram0 rootfstype=ramfs rw init=/linuxrc console=ttyS0,115200N8 earlycon=uart8250,mmio,0x18818300,115200n8 no_console_suspend noirqdebug";
+	};
+
+	board {
+		label = "hc1600a@dbB3100v20";
+	};
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	persistentmem {
+		compatible = "hichip,persistentmem";
+		mtdname = "persistentmem";
+		size = <4096>;
+	};
+};
+
+&fb0 {
+	bits_per_pixel = <32>;
+	xres = <1280>;
+	yres = <720>;
+	xres_virtual = <1280>;
+	yres_virtual = <720>;
+	xoffset = <0>;
+	yoffset = <0>;
+
+	scale = <1280 720 1920 1080>;
+
+	reg = <CONFIG_FB0_REG 0x1000>;
+	/*
+	 * frame buffer memory from:
+	 * system : malloc buffer from system heap
+	 * mmz0   : malloc buffer from mmz0
+	 * static : use CONFIG_FRAMEBUFFER_STATIC_PHYS and CONFIG_FRAMEBUFFER_STATIC_MEM_SIZE to allocate memory staticly.
+	 * default is system if the property is missing
+	 */
+	buffer-source = "system";
+	extra-buffer-size = <0xC00000>; /* 8Mb */
+
+	buffer-phy-static = <CONFIG_FRAMEBUFFER_STATIC_PHYS CONFIG_FRAMEBUFFER_STATIC_MEM_SIZE>;
+	status = "okay";
+};
+
+&fb1 {
+	reg = <CONFIG_FB1_REG 0x1000>;
+	bits_per_pixel = <8>;
+	xres = <1280>;
+	yres = <720>;
+	xres_virtual = <1280>;
+	yres_virtual = <720>;
+	xoffset = <0>;
+	yoffset = <0>;
+
+	scale = <1280 720 1920 1080>;
+	/*
+	 * frame buffer memory from:
+	 * system : malloc buffer from system heap
+	 * mmz0   : malloc buffer from mmz0
+	 * default is system if the property is missing
+	 */
+	buffer-source = "system";
+	extra-buffer-size = <0>; /* 8Mb */
+	pre-multiply = <0>;
+	status = "disabled";
+};
+
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pctl_uart0>;
+	status = "okay";
+};
+
+&uart1 {
+	status = "disabled";
+};
+
+&uart2 {
+	status = "disabled";
+};
+
+&uart3 {
+	status = "disabled";
+};
+
+&eth0 {
+	status = "disabled";
+};
+
+&irc {
+	linux,rc-map-name = "rc-hcdemo";
+	pinctrl-names = "active";
+	pinctrl-0 = <&pctl_irc>;
+	status = "okay";
+};
+
+&key_adc4 {
+	status = "okay";
+	adc_ref_voltage = <1890>; //range:0-2000mV
+      /*key_map = <voltage_min voltage_max, code>*/
+	key-map = <200 500 103>,
+		  <501 800 108>,
+		  <901 1100 105>,
+		  <1201 1300 106>,
+		  <1401 1500 0x160>,
+		  <1551 1650 139>,
+		  <1751 1790 174>;
+};
+
+&spi_flash {
+	spi-tx-bus-width = <1>;
+	spi-rx-bus-width = <1>;
+
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		nor@0 {
+			label = "nor";
+			reg = <0x0 0x1000000>;
+		};
+
+		boot@0 {
+			label = "boot";
+			reg = <0x0 0x80000>;
+		};
+
+		dtb@80000 {
+			label = "dtb";
+			reg = <0x80000 0x10000>;
+		};
+
+		avp@90000 {
+			label = "avp";
+			reg = <0x90000 0x1a0000>;
+		};
+
+		linux@230000 {
+			label = "linux";
+			reg = <0x230000 0x300000>;
+		};
+
+		rootfs@530000 {
+			label = "rootfs";
+			reg = <0x530000 0xa80000>;
+		};
+
+		eromfs@fb0000 {
+			label = "eromfs";
+			reg = <0xfb0000 0x30000>;
+		};
+
+		persistentmem@fe0000 {
+			label = "persistentmem";
+			reg = <0xfe0000 0x20000>;
+		};
+	};
+};
+
+&nand0 {
+	status = "disabled";
+};
+
+&playbackcodec {
+	//mute_gpio = <&gpio_T 30 0>;
+};
+
+&usb_host0 {
+	status = "okay";
+};
+
+&usb_host1 {
+	status = "okay";
+};
+
+&mmc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pctl_sdio>;   // pinctrl for SD
+	status = "okay";
+
+	// bus-width = <8>;
+	bus-width = <4>;
+	// bus-width = <1>;
+
+	broken-cd;
+	cd-gpios = <&gpio_T 13 GPIO_ACTIVE_LOW>;
+	// non-removable;
+
+	cap-sd-highspeed;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	//sd-uhs-ddr50;
+	//sd-uhs-sdr50;
+	//sd-uhs-sdr104;
+};
+
+&lvds {
+	rgb-backlight-gpios = <&gpio_L 0 GPIO_ACTIVE_HIGH>;
+	lcd-backlight-gpios-rtos = <PINPAD_L00 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&spim {
+	status = "disabled";
+};
+
+&pinctrl {
+	functions {
+		pctl_sf: pctl_sf {
+			name = "pctl_sf";
+			groups = "GPIO_T_14", "GPIO_T_15", "GPIO_T_16", "GPIO_T_17", "GPIO_T_18", "GPIO_T_19";
+			field-value-0 = <0x1>;
+			field-value-1 = <0x1>;
+			field-value-2 = <0x1>;
+			field-value-3 = <0x1>;
+			field-value-4 = <0x1>;
+			field-value-5 = <0x1>;
+		};
+
+		pctl_irc: pctl_irc {
+			name = "pctl_irc";
+			groups = "GPIO_L_14";
+			field-value-0 = <0x1>;
+		};
+
+		pctl_uart0: pctl_uart0 {
+			name = "pctl_uart0";
+			groups = "GPIO_T_11", "GPIO_T_12";
+			field-value-0 = <0x1>;
+			field-value-1 = <0x1>;
+		};
+		
+		pctl_sdio: pctl_sdio {
+			name = "pctl_sdio";
+			groups = "GPIO_T_00", "GPIO_T_01", "GPIO_T_02", "GPIO_T_03",\
+					"GPIO_T_04", "GPIO_T_05", "GPIO_T_13";
+			field-value-0 = <0xf9>;
+			field-value-1 = <0xf9>;
+			field-value-2 = <0xf9>;
+			field-value-3 = <0xf9>;
+			field-value-4 = <0xf9>;
+			field-value-5 = <0xf9>;
+			field-value-6 = <0xf9>;
+			field-value-7 = <0x0>;
+		};
+	};
+};
+
+&dsc {
+        status = "okay";
+};
+
+#include "lcd_rgb_800_480_rgb565.dtsi"

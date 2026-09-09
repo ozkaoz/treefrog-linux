@@ -1,0 +1,32 @@
+#!/bin/sh
+#
+# Start the preinit
+#
+
+emmc_dev="/dev/mmcblk0"
+
+do_check_vfat(){ # $1 device
+    local temp_mount="/tmp/tempx"
+
+    if [ ! -d ${temp_mount} ] ; then
+        mkdir -p ${temp_mount}
+    fi
+
+	umount ${temp_mount} 2>/dev/null
+	mount -t auto $1 ${temp_mount} 2>/dev/null
+	if [ $? -ne 0 ]; then
+		echo "formating " $1 "to vfat..."
+		mkfs.vfat $1
+	else
+		echo $1 "already format"
+		umount /tmp/tempx 2>/dev/null
+	fi
+}
+
+#format
+do_check_vfat ${emmc_dev}
+
+#mount
+mount -t tmpfs tmpfs /mnt
+mkdir -p /mnt/emmc
+#mount -t auto ${emmc_dev} /mnt/emmc

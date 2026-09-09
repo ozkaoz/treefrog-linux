@@ -1,0 +1,350 @@
+&mipi {
+	reg = <0xb884A000 0x300>, <0xb8800444 0x8>,<0xb8800080 0x8>;
+
+	/*
+	 * MIPI_COLOR_RGB565_0	=	0
+	 * MIPI_COLOR_RGB565_1	=	1
+	 * MIPI_COLOR_RGB565_2	=	2
+	 * MIPI_COLOR_RGB666_0	=	3
+	 * MIPI_COLOR_RGB666_1	=	4
+	 * MIPI_COLOR_RGB888	=	5
+	 */
+	dsi,format =<5>;
+
+	dsi,lanes = <4>;
+
+	/*
+	 * bit 6:5 :Generic interface read-back Virtual Channel identification.
+	 * bit 4 :Enables CRC reception and error reporting.
+	 * bit 3 :Enables ECC reception, error correction and reporting
+	 * bit 2 :MIPI_Bus_Turn_request.
+	 * bit 1 :Enables EOTp reception.
+	 * bit 0 :Enables EOTp transmission.
+	 */
+	dsi,cfg = <0x1C>;
+
+	/* If there is no "dsi,flags", "dsi,flags" = <0x3FD>;
+	 * bit 11: Enables the request for an acknowledge response at the end of a fram
+	 * bit 10: Enables the transmission of null packets in the HACT period
+	 * bit 9:  Enables the transmission of multi video packets in the HACT period
+	 * bit 8:  Enables return to Low Power inside HFP period when timing allows.
+	 * bit 7:  Enables return to Low Power inside HBP period when timing allows
+	 * bit 6:  Enables return to Low Power inside VACT period when timing allows.
+	 * bit 5:  Enables return to Low Power inside VFP period when timing allows
+	 * bit 4:  Enables return to Low Power inside VBP period when timing allows
+	 * bit 3:  Enables return to Low Power inside VSA period when timing allows
+	 * bit 2:1 Selects video mode transmission type. 0: Non-burst with Sync pulses; 1: Non-burst with Sync events; 2-3: Burst with Sync pulses.
+	 * bit 0:  Enables DPI Video mode transmission.
+	 */
+	dsi,flags = <0x3FD>;
+
+	/*
+	 * 0: MIPI_DRIVE_STRENGTH_MIDIMUN,
+	 * 1: MIPI_DRIVE_STRENGTH_MIDDLE,
+	 * 2: MIPI_DRIVE_STRENGTH_BIGGER, default
+	 * 3: MIPI_DRIVE_STRENGTH_MAXIMUM,
+	*/
+	mipi-drive-strength = <2>;
+
+	/*
+	 * bit 4 : MIPI_DSI_DATA3_LANE_NP_SWAP
+	 * bit 3 : MIPI_DSI_DATA2_LANE_NP_SWAP
+	 * bit 2 : MIPI_DSI_DATA1_LANE_NP_SWAP
+	 * bit 1 : MIPI_DSI_DATA0_LANE_NP_SWAP
+	 * bit 0 : MIPI_DSI_CLOCK_LANE_NP_SWAP
+	 */
+
+	dsi,swap = <0x0>;
+	/*
+	 * 0: E_SRC_SEL_FXDE = 0
+	 * 1: E_SRC_SEL_4KDE
+	 * 2: E_SRC_SEL_HDMI_RX
+	 */
+	src-sel = <CONFIG_DE4K_OUTPUT_SUPPORT>;
+	clock-frequency = <500000000>;
+	//status = "okay";
+};
+
+&DE {
+	tvtype = <15>;
+	VPInitInfo {
+		rgb-cfg{
+			b-rgb-enable = <1>;
+			/*
+			 * 0: MODE_PRGB
+			 * 1: MODE_SRGB
+			 */
+			rgb-mode = <0>;
+			/*
+			 * 0: MODE_PRGB_888_10bit
+			 * 1: MODE_PRGB_666
+			 */
+			prgb-mode = <0>;
+			lcd-width = <800>;
+			timing-para {
+				/* bool type, 0 or 1*/
+				b-enable = <1>;
+
+				h-display_len = <0>;
+				v-display_len = <0>;
+
+				/*
+				 * VPO_RGB_CLOCK_27M = 1,
+				 * VPO_RGB_CLOCK_33M = 2,
+				 * VPO_RGB_CLOCK_49M = 3,
+				 * VPO_RGB_CLOCK_66M = 4,
+				 * VPO_RGB_CLOCK_74M = 5,
+				 * VPO_RGB_CLOCK_85M = 6,
+				 * VPO_RGB_CLOCK_108M = 7,
+				 * VPO_RGB_CLOCK_6_6M = 8,
+				 * VPO_RGB_CLOCK_9M = 9,
+				 * VPO_RGB_CLOCK_39_6M = 10,
+				 * VPO_RGB_CLOCK_74_25M = 11,
+				 * VPO_RGB_CLOCK_148_5M = 12,
+				 * VPO_RGB_CLOCK_54M = 13,
+				 * VPO_RGB_CLOCK_132M = 14,//H1600
+				 * VPO_RGB_CLOCK_297M = 15,//H1600 only De4k
+				 * VPO_RGB_CLOCK_DPLL = 0xFF,//H1600
+				*/
+				output-clock = <11>;
+
+				h-total-len = <898>;
+				v-total-len = <1331>;
+
+				h-active-len = <800>;
+				v-active-len = <1280>;
+
+				h-front-len = <50>;
+				h-sync-len = <40>;
+				h-back-len = <8>;
+
+				v-front-len = <9>;
+				v-sync-len = <32>;
+				v-back-len = <10>;
+
+				/* bool type, 0 or 1*/
+				h-sync-level = <0>;
+				/* bool type, 0 or 1*/
+				v-sync-level = <0>;
+
+				/* bool type, 0 or 1*/
+				active-polarity = <1>;
+				frame-rate = <60000>;
+
+				/*
+				31	De_dig_pll_en
+				25:16	DE_DIG_PLL_M_ctrl
+				13:8	DE_DIG_PLL_N_ctrl
+				5:0	DE_DIG_PLL_L_ctrl
+				de_digpll_clock = 24 *(M+1)/((N+1)*(L+1))
+				*/
+				dpll-clock-reg-value = <0x0>;
+			};
+		};
+	};
+};
+
+&mipi{
+	panel-init-sequence = [
+		39 00 04 FF 98 81 03
+		15 00 02 01 00
+		15 00 02 02 00
+		15 00 02 03 53
+		15 00 02 04 53
+		15 00 02 05 13
+		15 00 02 06 04
+		15 00 02 07 02
+		15 00 02 08 02
+		15 00 02 09 00
+		15 00 02 0a 00
+		15 00 02 0b 00
+		15 00 02 0c 00
+		15 00 02 0d 00
+		15 00 02 0e 00
+		15 00 02 0f 00
+		15 00 02 10 00
+		15 00 02 11 00
+		15 00 02 12 00
+		15 00 02 13 00
+		15 00 02 14 00
+		15 00 02 15 00
+		15 00 02 16 00
+		15 00 02 17 00
+		15 00 02 18 00
+		15 00 02 19 00
+		15 00 02 1a 00
+		15 00 02 1b 00
+		15 00 02 1c 00
+		15 00 02 1d 00
+		15 00 02 1e C0
+		15 00 02 1f 00
+		15 00 02 20 02
+		15 00 02 21 09
+		15 00 02 22 00
+		15 00 02 23 00
+		15 00 02 24 00
+		15 00 02 25 00
+		15 00 02 26 00
+		15 00 02 27 00
+		15 00 02 28 55
+		15 00 02 29 03
+		15 00 02 2a 00
+		15 00 02 2b 00
+		15 00 02 2c 00
+		15 00 02 2d 00
+		15 00 02 2e 00
+		15 00 02 2f 00
+		15 00 02 30 00
+		15 00 02 31 00
+		15 00 02 32 00
+		15 00 02 33 00
+		15 00 02 34 00
+		15 00 02 35 00
+		15 00 02 36 00
+		15 00 02 37 00
+		15 00 02 38 3c
+		15 00 02 39 00
+		15 00 02 3a 00
+		15 00 02 3b 00
+		15 00 02 3c 00
+		15 00 02 3d 00
+		15 00 02 3e 00
+		15 00 02 3f 00
+		15 00 02 40 00
+		15 00 02 41 00
+		15 00 02 42 00
+		15 00 02 43 00
+		15 00 02 44 00
+		15 00 02 45 00
+		15 00 02 50 01
+		15 00 02 51 23
+		15 00 02 52 45
+		15 00 02 53 67
+		15 00 02 54 89
+		15 00 02 55 ab
+		15 00 02 56 01
+		15 00 02 57 23
+		15 00 02 58 45
+		15 00 02 59 67
+		15 00 02 5a 89
+		15 00 02 5b ab
+		15 00 02 5c cd
+		15 00 02 5d ef
+		15 00 02 5e 01
+		15 00 02 5f 0A
+		15 00 02 60 02
+		15 00 02 61 02
+		15 00 02 62 08
+		15 00 02 63 15
+		15 00 02 64 14
+		15 00 02 65 02
+		15 00 02 66 11
+		15 00 02 67 10
+		15 00 02 68 02
+		15 00 02 69 0F
+		15 00 02 6a 0E
+		15 00 02 6b 02
+		15 00 02 6c 0D
+		15 00 02 6d 0C
+		15 00 02 6e 06
+		15 00 02 6f 02
+		15 00 02 70 02
+		15 00 02 71 02
+		15 00 02 72 02
+		15 00 02 73 02
+		15 00 02 74 02
+		15 00 02 75 0A
+		15 00 02 76 02
+		15 00 02 77 02
+		15 00 02 78 06
+		15 00 02 79 15
+		15 00 02 7a 14
+		15 00 02 7b 02
+		15 00 02 7c 10
+		15 00 02 7d 11
+		15 00 02 7e 02
+		15 00 02 7f 0c
+		15 00 02 80 0d
+		15 00 02 81 02
+		15 00 02 82 0E
+		15 00 02 83 0F
+		15 00 02 84 08
+		15 00 02 85 02
+		15 00 02 86 02
+		15 00 02 87 02
+		15 00 02 88 02
+		15 00 02 89 02
+		15 00 02 8a 02
+		39 00 04 FF 98 81 04
+		15 00 02 6C 15
+		15 00 02 6E 30
+		15 00 02 6F 55
+		15 00 02 3A 24
+		15 00 02 8D 1F
+		15 00 02 87 BA
+		15 00 02 26 76
+		15 00 02 B2 D1
+		15 00 02 B5 07
+		15 00 02 35 1f
+		15 00 02 31 75
+		15 00 02 3b 98
+		15 00 02 38 01
+		15 00 02 39 00
+		15 00 02 88 0b
+		39 00 04 FF 98 81 01
+		15 00 02 22 0a
+		15 00 02 31 09
+		15 00 02 35 07
+		15 00 02 53 48
+		15 00 02 40 33
+		15 00 02 55 88
+		15 00 02 50 95
+		15 00 02 51 95
+		15 00 02 60 30
+		15 00 02 34 01
+		15 00 02 A0 0f
+		15 00 02 A1 17
+		15 00 02 A2 22
+		15 00 02 A3 19
+		15 00 02 A4 15
+		15 00 02 A5 28
+		15 00 02 A6 1C
+		15 00 02 A7 1C
+		15 00 02 A8 78
+		15 00 02 A9 1C
+		15 00 02 AA 28
+		15 00 02 AB 69
+		15 00 02 AC 1A
+		15 00 02 AD 19
+		15 00 02 AE 4B
+		15 00 02 AF 22
+		15 00 02 B0 2A
+		15 00 02 B1 4B
+		15 00 02 B2 6B
+		15 00 02 B3 3F
+		15 00 02 C0 01
+		15 00 02 C1 17
+		15 00 02 C2 22
+		15 00 02 C3 19
+		15 00 02 C4 15
+		15 00 02 C5 28
+		15 00 02 C6 1C
+		15 00 02 C7 1D
+		15 00 02 C8 78
+		15 00 02 C9 1C
+		15 00 02 CA 28
+		15 00 02 CB 69
+		15 00 02 CC 1A
+		15 00 02 CD 19
+		15 00 02 CE 4B
+		15 00 02 CF 22
+		15 00 02 D0 2A
+		15 00 02 D1 4B
+		15 00 02 D2 6B
+		15 00 02 D3 3F
+		39 00 04 FF 98 81 00
+		15 00 02 35 00
+		05 78 01 11
+		05 1E 01 29
+	];
+};

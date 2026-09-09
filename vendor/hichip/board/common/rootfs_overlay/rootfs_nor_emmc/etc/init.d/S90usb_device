@@ -1,0 +1,121 @@
+#!/bin/sh
+
+
+start_mass_storage() {
+    modprobe libcomposite
+
+    mkdir -p /sys/kernel/config
+    mount none /sys/kernel/config -t configfs
+    mkdir -p /sys/kernel/config/usb_gadget/g1
+    echo 0x18d1 > /sys/kernel/config/usb_gadget/g1/idVendor
+    echo 0x4ee7 > /sys/kernel/config/usb_gadget/g1/idProduct
+    mkdir -p /sys/kernel/config/usb_gadget/g1/configs/b.1/strings/0x409
+    echo "Mass Storage" > /sys/kernel/config/usb_gadget/g1/configs/b.1/strings/0x409/configuration
+    mkdir -p /sys/kernel/config/usb_gadget/g1/functions/mass_storage.gs1
+
+    echo "/dev/mmcblk0" > /sys/kernel/config/usb_gadget/g1/functions/mass_storage.gs1/lun.0/file
+
+    ln -sf /sys/kernel/config/usb_gadget/g1/functions/mass_storage.gs1 /sys/kernel/config/usb_gadget/g1/configs/b.1/f1
+    echo musb-hdrc.0.auto > /sys/kernel/config/usb_gadget/g1/UDC
+
+    #start usb otg switch
+    usb_otg_daemon &
+}
+
+stop_mass_storage() {
+    echo "" > /sys/kernel/config/usb_gadget/g1/configs/b.1/strings/0x409/configuration
+    echo "" > /sys/kernel/config/usb_gadget/g1/functions/mass_storage.gs1/lun.0/file
+    echo "" > /sys/kernel/config/usb_gadget/g1/UDC
+}
+
+wait_for_media_ready(){
+    #local media_path="/media/mmcblk0"
+    local media_path="/mnt/emmc"
+    local i=0
+    local flag=""
+
+    while true
+    do
+        if [ -d ${media_path} ]; then
+            echo "media ${media_path} is already"
+            flag="ok"
+            return
+        else
+            echo "waitting for media ${media_path} ready"
+            i=`expr $i + 1`
+            usleep 500
+            if [ $i -eq 400 ]; then
+                    echo "waitting for media ${media_path} timeout"
+                    flag="fail"
+                    return
+            fi
+        fi
+    done
+}
+
+start_mtp() {
+    wait_for_media_ready
+
+    #start mtp
+    mtp &
+
+    modprobe libcomposite
+    modprobe usb_f_mtp
+
+    mkdir -p /sys/kernel/config
+    mount none /sys/kernel/config -t configfs
+
+    mkdir -p /sys/kernel/config/usb_gadget/g1
+    echo "0x04E8" > /sys/kernel/config/usb_gadget/g1/idVendor
+    echo "0x5A0F" > /sys/kernel/config/usb_gadget/g1/idProduct
+
+    mkdir -p /sys/kernel/config/usb_gadget/g1/strings/0x409
+    echo "0402101560" > /sys/kernel/config/usb_gadget/g1/strings/0x409/serialnumber
+    echo "Google.Inc" > /sys/kernel/config/usb_gadget/g1/strings/0x409/manufacturer
+    echo "mtp" > /sys/kernel/config/usb_gadget/g1/strings/0x409/product
+
+    mkdir -p /sys/kernel/config/usb_gadget/g1/configs/c.1
+    mkdir -p /sys/kernel/config/usb_gadget/g1/configs/c.1/strings/0x409
+    echo "mtp" > /sys/kernel/config/usb_gadget/g1/configs/c.1/strings/0x409/configuration
+
+    mkdir -p /sys/kernel/config/usb_gadget/g1/functions/mtp.0
+    ln -s /sys/kernel/config/usb_gadget/g1/functions/mtp.0 /sys/kernel/config/usb_gadget/g1/configs/c.1
+
+    echo musb-hdrc.0.auto > /sys/kernel/config/usb_gadget/g1/UDC
+
+    #start usb otg switch
+    #usb_otg_daemon &
+    echo "peripheral" > /sys/devices/platform/soc/18844000.usb/musb-hdrc.0.auto/mode
+}
+
+stop_mtp() {
+    echo "" > /sys/kernel/config/usb_gadget/g1/configs/c.1/strings/0x409/configuration
+    echo "" > /sys/kernel/config/usb_gadget/g1/UDC
+
+    killall mtp &
+}
+
+start() {
+    start_mtp
+}
+
+stop() {
+    stop_mtp
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+case "$1" in
+	start|stop|restart)
+		"$1";;
+	reload)
+		# Restart, since there is no true "reload" feature.
+		restart;;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload}"
+		exit 1
+esac

@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# Start the preinit
+#
+
+partiton_name="data"
+
+function get_partiton_from_label()
+{
+    local block_no=""
+
+    block_no=`cat /proc/mtd | grep $1 | awk 'NR==1{print $1}' | grep -o "[0-9]"`
+    printf "mtdblock%s" $block_no
+}
+
+#mount data
+part_data_name=`get_partiton_from_label ${partiton_name}`
+echo "part_data_name=${part_data_name}"
+
+mkdir -p /tmp/data
+mount -t jffs2 /dev/${part_data_name} /tmp/data
