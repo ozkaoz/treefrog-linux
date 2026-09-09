@@ -1,0 +1,29 @@
+# --- outputs de build ---
+out/
+build/
+
+# --- descargas / kernels vanilla ---
+downloads/
+linux-*/
+
+# --- artefactos pesados que nunca se suben ---
+*.tar.gz
+*.tar.xz
+*.7z
+*.o
+*.a
+*.ko
+vmlinux*
+uImage*
+*.dtb
+!vendor/hichip/**/*.dtb
+*.img
+
+# --- docs técnicos pesados generados ---
+docs/test-runs/*.log
+
+# --- temporal ---
+*.tmp
+*.swp
+*~
+.DS_Store
