@@ -55,3 +55,18 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
 
 ### R12. Yaffs2 con blobs precompilados
 - `drivers/hcdrivers/hc-p2p/{4.4.186,5.12.4}/p2p.o, p2p-dev.o` — .o precompilados del vendor. `drivers/hcdrivers/adc/get_adc_default_val*.o` también. → No redistribuir públicamente sin decisión de licencia (AGENTS.md §4.9, known-gaps #8).
+
+### R13. FASE C ejecutada: patches + drivers + yaffs2 aplicados limpios (2026-09-09)
+- `scripts/fetch-kernel.sh`: descarga kernel.org `linux-4.4.186.tar.xz` (83.5 MB), `sha256sum` == `0b1273d35c0664234e069f1ba894161b466679f6e1053f44fcf4098290937984` == manifest local de Toolchains. Gap #7 CERRADO (verificado contra kernel.org directamente).
+- `scripts/apply-patches.sh`: 41/41 .patch aplicados sin conflicto (`patch -p1 --dry-run` antes de cada uno; orden numérico = orden Buildroot). rsync linux-drivers OK (arch/mips/hc16xx presente, Kconfig HICHIP_OK, hcuapi OK). yaffs2 `patch-ker.sh c m` integró fs/yaffs2 + fs/Kconfig + fs/Makefile.
+- Fix propio documentado: `sed -i ... -fcommon` en `scripts/dtc/Makefile` del árbol (gcc host 13 de Ubuntu 24.04 rompe dtc 4.4 con `yylloc` multiple-definition; -fcommon es el fix estándar). Se aplica en apply-patches.sh paso 2.
+
+### R14. FASE C smoke build SUPERADO (2026-09-09 18:42)
+- `scripts/build-kernel.sh hc16xx-db-a3100-v10 squashfs`:
+  - fixup load addr desde DTS funcionó igual que el SDK: `CONFIG_PHYSICAL_START=0xffffffff80000000`, `phys_offset=0x00000000`, `avp_entry=0xa4f34000` (el script update_physical_start.sh del vendor corrió verbatim sobre .config + spaces.h + kernel-entry-init.h).
+  - DTB compilado (27849 B) con regla `%.dtb` de arch/mips/Makefile:365 (DTS en `arch/mips/boot/dts/` plano). Warnings dtc solo `avoid_default_addr_size` (benignos, presentes también en builds vendor).
+  - vmlinux: `make ... vmlinux` OK → `readelf -h`: `ELF32 LSB EXEC MIPS R3000, Entry 0x803e3200`, linkeado @0x80000000.
+  - `Linux version 4.4.186-release (dafunknoise@DFNK) (gcc version 6.3.0 (Codescape GNU Tools 2018.09-02 for MIPS MTI Linux)) #2 PREEMPT` — compilador del fabricante.
+  - Manifest completo en out/hc16xx-db-a3100-v10/manifest.json (commit ff9ee22, sha256 de config/dts/dtb/vmlinux.bin).
+  - Nota: config vendor trae `MIPS_NO_APPENDED_DTB` (hcboot pasa DTB). El append del SDK es conveniencia: objcopy --add-section si el ELF no tiene `.appended_dtb` (nuestro flujo), --update-section si la tiene. Resultado: vmlinux.bin 5804684 B.
+- Artifact SHA256 (manifest): vmlinux_bin `80833da6ad8072b7fd9772fd61e66a43585bd6931aab646d4d187face6f081ea`, dtb `bae8b4640e281fd51ec2e2128277ef2a441dcecac1a29185b9e65087f1e2ebc6`.
