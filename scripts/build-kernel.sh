@@ -6,10 +6,13 @@
 # Uso: scripts/build-kernel.sh <board> [config-variant]
 #   <board>            boards/<board>/dts/<board>.dts (board real, ej: r36sx)
 #                     o DTS de devboard del SDK en vendor/hichip/board/common/dts (ej: hc16xx-db-a3100-v10)
-#   [config-variant]  squashfs (default) | initramfs | ramfs | kernelonly
-#                     ramfs = initramfs stock embebido (esquema real de la consola,
-#                     R30): usa boards/<board>/config/<board>-ramfs.fragment.config
-#                     y requiere build/stock-initramfs.cpio (extract-stock-initramfs.sh)
+#   [config-variant]  squashfs (default) | initramfs | ramfs | treefrog | kernelonly
+#                     ramfs    = initramfs stock embebido (esquema real de la consola,
+#                                R30): fragment <board>-ramfs.fragment.config
+#                     treefrog = initramfs PROPIO (FASE F, linuxrc TreeFrog):
+#                                fragment <board>-treefrog.fragment.config +
+#                                build/treefrog-initramfs.cpio (build-initramfs.sh)
+#                     ambos requieren build/stock-initramfs.cpio (extract-stock-initramfs.sh)
 #
 # Artefactos en out/<board>/:
 #   vmlinux          ELF completo
@@ -63,6 +66,14 @@ case "$CONFIG_VARIANT" in
     FRAGMENT="$ROOT/boards/$DTS_NAME/config/$DTS_NAME-ramfs.fragment.config"
     [ -f "$FRAGMENT" ] || { echo "ERROR: falta $FRAGMENT"; exit 1; }
     [ -f "$STOCK_INITRAMFS" ] || { echo "ERROR: falta $STOCK_INITRAMFS — ejecuta scripts/extract-stock-initramfs.sh"; exit 1; }
+    ;;
+  treefrog)
+    # FASE F: initramfs PROPIO (linuxrc TreeFrog -> FrogUI directo)
+    BASE_VARIANT="squashfs"
+    FRAGMENT="$ROOT/boards/$DTS_NAME/config/$DTS_NAME-treefrog.fragment.config"
+    [ -f "$FRAGMENT" ] || { echo "ERROR: falta $FRAGMENT"; exit 1; }
+    TF_INITRAMFS="$ROOT/build/treefrog-initramfs.cpio"
+    [ -f "$TF_INITRAMFS" ] || { echo "ERROR: falta $TF_INITRAMFS — ejecuta scripts/build-initramfs.sh"; exit 1; }
     ;;
   *)
     if [ -f "$ROOT/boards/$DTS_NAME/config/$DTS_NAME.fragment.config" ]; then

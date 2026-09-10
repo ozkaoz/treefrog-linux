@@ -1,0 +1,151 @@
+#!/bin/sh
+# treefrog-linux linuxrc — FASE F: init propio que lanza FrogUI directo
+#
+# Reemplaza el flujo stock (icube -> rkgame -> zhijack) del initramfs del
+# firmware. Basado en la receta PROBADA de cubegm/zhijack.sh (test #9/#10 con
+# k3/k4: 118k+ frames, navegación, batería OK), reducida a lo que FrogUI
+# necesita para arrancar como init:
+#   1. devtmpfs/proc/sysfs + /tmp (tmpfs)
+#   2. hcdaemon (puente AMPRPC al AVP stock — audio/display)
+#   3. mdev hotplug + montar la SD en /mnt/sdcard (bind como S99app stock)
+#   4. cubevol (gpio/ADC -> /tmp/joy_key: el input de picoarch/FrogUI)
+#   5. CPU governor performance
+#   6. TF_DEVICE env + loop picoarch + frogui_libretro.so con el mismo
+#      protocolo /tmp/frogui_launch.txt que usa zhijack.sh (standalone/games)
+#
+# Logs: /mnt/sdcard/log.txt SOLO si existe (opt-in, como zhijack).
+
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+# --- 1. filesystems básicos ----------------------------------------------------
+/bin/busybox mkdir -p /dev /proc /sys /tmp /media /mnt/sdcard
+/bin/busybox mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
+/bin/busybox mount -t proc proc /proc 2>/dev/null || true
+/bin/busybox mount -t sysfs sysfs /sys 2>/dev/null || true
+/bin/busybox mount -t tmpfs tmpfs /tmp 2>/dev/null || true
+/bin/busybox mount -t tmpfs tmpfs /media 2>/dev/null || true
+
+# console al stdout del kernel (hcboot entrega /dev/console)
+if (/bin/busybox exec 0</dev/console) 2>/dev/null; then
+    /bin/busybox exec 0</dev/console
+    /bin/busybox exec 1>/dev/console
+    /bin/busybox exec 2>/dev/console
+fi
+
+LOG=/dev/null
+[ -f /mnt/sdcard/log.txt ] && LOG=/mnt/sdcard/log.txt
+echo "=== treefrog-linux init [r36sx] $(date '+%H:%M:%S') ===" > "$LOG" 2>/dev/null || true
+
+# --- 2. hcdaemon: puente AMPRPC hacia el AVP stock (audio/display) --------------
+/usr/bin/hcdaemon &
+echo "hcdaemon started" >> "$LOG" 2>/dev/null
+
+# --- 3. hotplug + montar la SD --------------------------------------------------
+/bin/busybox echo /sbin/mdev > /proc/sys/kernel/hotplug 2>/dev/null || true
+/bin/busybox mdev -s 2>/dev/null || true
+
+# esperar la SD (como S99app stock: /media/*/cubegm/icube existe)
+MNTDIR=""
+i=0
+while [ $i -lt 40 ]; do
+    for d in /media/*; do
+        [ -e "$d/cubegm/icube" ] && MNTDIR="$d" && break
+    done
+    [ -n "$MNTDIR" ] && break
+    /bin/busybox sleep 0.5
+    i=$((i+1))
+    /bin/busybox mdev -s 2>/dev/null || true
+done
+
+if [ -z "$MNTDIR" ]; then
+    echo "FATAL: SD no encontrada (sin /media/*/cubegm/icube) tras 20s" >> "$LOG"
+    # mantener vivo el kernel para forense por consola
+    while :; do /bin/busybox sleep 10; done
+fi
+
+echo "sd: $MNTDIR -> /mnt/sdcard" >> "$LOG"
+/bin/busybox mount --bind "$MNTDIR" /mnt/sdcard
+
+# rootfs stock de la SD: binarios (picoarch, drivers, cubevol alternativo)
+if [ -d "$MNTDIR/rootfs" ]; then
+    for sub in lib usr lib32; do
+        [ -d "$MNTDIR/rootfs/$sub" ] && /bin/busybox mount --bind "$MNTDIR/rootfs/$sub" "/$sub"
+    done
+fi
+# librerías del propio cubegm (driver.so, etc.)
+export LD_LIBRARY_PATH=/mnt/sdcard/cubegm/lib:/mnt/sdcard/cubegm/usr/lib
+
+# --- 4. input: cubevol (gpio -> /tmp/joy_key) — vive en la SD, no en el ramdisk --
+CV=/mnt/sdcard/rootfs/usr/bin/cubevol
+[ -x "$CV" ] && "$CV" &
+echo "cubevol started ($CV)" >> "$LOG"
+
+# --- 5. CPU performance (receta zhijack) ---------------------------------------
+for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+    [ -w "$g" ] && /bin/busybox echo performance > "$g" 2>/dev/null
+done
+
+# --- 6. entorno TreeFrogUI + loop FrogUI directo --------------------------------
+cat > /tmp/tfdevice.env <<EOF
+TF_DEVICE=R36SX
+TF_PANEL_W=640
+TF_PANEL_H=480
+TF_UI_SCALE=150
+TF_ASPECT_NUM=4
+TF_ASPECT_DEN=3
+TF_ROTATE=0
+TF_PRESENT=fbwrite
+TF_DRIVER=/mnt/sdcard/cubegm/driver_r36sx.so
+EOF
+. /tmp/tfdevice.env
+export TF_DEVICE TF_PANEL_W TF_PANEL_H TF_UI_SCALE TF_DRIVER
+
+PICOARCH=/mnt/sdcard/cubegm/picoarch
+PICOARCH_HI=/mnt/sdcard/cubegm/picoarch_hi
+FROGUI_CORE=/mnt/sdcard/cubegm/cores/frogui_libretro.so
+LAUNCH=/tmp/frogui_launch.txt
+
+echo "init complete; entering frogui loop" >> "$LOG"
+
+ITER=0
+while :; do
+    ITER=$((ITER+1))
+    /bin/busybox rm -f "$LAUNCH"
+    echo "--- iter $ITER: frogui ---" >> "$LOG"
+    "$PICOARCH" "$FROGUI_CORE" "$FROGUI_CORE" >> /tmp/treefrog_ui.log 2>&1
+    RC=$?
+    echo "frogui exited rc=$RC" >> "$LOG"
+
+    [ -f "$LAUNCH" ] || { /bin/busybox sleep 1; continue; }
+
+    # protocolo de lanzamiento (idéntico al de zhijack.sh / FrogUI)
+    KIND=$(/bin/busybox sed -n 1p "$LAUNCH")
+    if [ "$KIND" = standalone ]; then
+        BIN_PATH=$(/bin/busybox sed -n 2p "$LAUNCH")
+        ARG_PATH=$(/bin/busybox sed -n 3p "$LAUNCH")
+        /bin/busybox rm -f "$LAUNCH"
+        /bin/busybox sleep 0.3
+        echo "--- iter $ITER: standalone [$BIN_PATH] ---" >> "$LOG"
+        if [ -n "$ARG_PATH" ]; then
+            "$BIN_PATH" "$ARG_PATH" >> /tmp/treefrog_ui.log 2>&1
+        else
+            "$BIN_PATH" >> /tmp/treefrog_ui.log 2>&1
+        fi
+        /bin/busybox sleep 0.2
+        continue
+    fi
+    CORE_PATH=$(/bin/busybox sed -n 1p "$LAUNCH")
+    ROM_PATH=$(/bin/busybox sed -n 2p "$LAUNCH")
+    /bin/busybox rm -f "$LAUNCH"
+    if [ -n "$CORE_PATH" ] && [ -n "$ROM_PATH" ]; then
+        /bin/busybox sleep 0.3
+        BIN="$PICOARCH"
+        case "$CORE_PATH" in
+            *gpsp*|*pcsx*|*ps1*|*ppsspp*) [ -f "$PICOARCH_HI" ] && BIN="$PICOARCH_HI" ;;
+        esac
+        echo "--- iter $ITER: game [$CORE_PATH] via $BIN ---" >> "$LOG"
+        "$BIN" "$CORE_PATH" "$ROM_PATH" >> /tmp/treefrog_ui.log 2>&1
+        echo "game exited rc=$?" >> "$LOG"
+    fi
+    /bin/busybox sleep 0.2
+done

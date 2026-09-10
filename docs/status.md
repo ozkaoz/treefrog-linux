@@ -1,6 +1,6 @@
 # Status — treefrog-linux
 
-Actualizado: 2026-09-10 15:35 (test #10 PASS: batería OK; k4 = golden propio; FASE F iniciada)
+Actualizado: 2026-09-10 15:40 (FASE F: k5 = init propio, test #11 desplegado)
 
 ## Working
 
@@ -22,13 +22,17 @@ Actualizado: 2026-09-10 15:35 (test #10 PASS: batería OK; k4 = golden propio; F
 
 ## In progress
 
-- **FASE F (iniciada): initramfs TreeFrog propio.** k4 es el golden de referencia
-  (boot+input+batería OK, 118k+ frames, poweroff limpio). Siguiente paso: BusyBox
-  MIPS mínimo propio montando la SD y lanzando el userland TreeFrogUI sin el
-  initramfs stock extraído (independencia del firmware) → después rootfs propio.
-  Experimento previo de referencia: `boards/r36sx/config/r36sx-kernelonly.fragment.config`
-  + `rootfs/tfinit` (test #3, SD kernel-only — falló por falta de cubegm/, NO del
-  initramfs: hcboot exige sistema completo en SD; con cubegm/ presente funcionará).
+- **FASE F — TEST #11 (2026-09-10 15:37): k5 = init PROPIO.** k4 es el golden
+  (boot+input+batería). k5 sustituye el initramfs stock por NUESTRO initramfs
+  (371 archivos, sha 5bf44e55): linuxrc propio que monta SD, lanza hcdaemon +
+  cubevol + picoarch+FrogUI DIRECTO (sin icube/rkgame/zhijack). Componentes
+  firmware reutilizados: busybox, lib/, hcdaemon, hotplug_helper (empaquetados
+  por scripts/build-initramfs.sh, no redistribuidos). Ver
+  `docs/test-runs/2026-09-10_1537_r36sx.md`.
+- Éxito = primera consola arrancando con kernel+init propios (solo queda
+  hcboot/AVP stock, conservados por estrategia §7).
+- Fallo aislado al linuxrc (kernel idéntico a k4): diagnóstico por síntoma
+  (logo quieto=init temprano; menú sin input=cubevol; negro=hcdaemon/mounts).
 
 ## Blocked
 
@@ -45,11 +49,12 @@ Actualizado: 2026-09-10 15:35 (test #10 PASS: batería OK; k4 = golden propio; F
 
 ## Next
 
-1. Usuario prueba test #10 (k4): esperado menú navegable SIN aviso de batería.
-2. OK → FASE E formal: poweroff/reboot limpios, audio/AVP, USB, dmesg runtime
-   via zhijack; FASE F (initramfs TreeFrog propio → rootfs → FrogUI directo).
-3. Persiste aviso → calibración ADC: capturar dmesg + lecturas check_adc y comparar.
-4. FASE G: caracterizar R36HD/SF3000/SF3500/GB350 (docs/device-matrix.md).
+1. Usuario prueba test #11 (k5): esperado menú navegable con banner nuestro en log.
+2. OK → FASE F sigue: refinamiento del init propio (dmesg/proc dump para K0,
+   poweroff limpio propio) → rootfs TreeFrog completo → retirar bind-mounts stock.
+3. Fallo → diagnóstico por síntoma en linuxrc (aislado, kernel == k4).
+4. FASE G: caracterizar R36HD/SF3000/SF3500/GB350 (docs/device-matrix.md) con el
+   pipeline maduro (fragment + DTS por board).
 
 ## Last known bootable commit
 

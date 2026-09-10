@@ -1,0 +1,33 @@
+treefrog-linux TEST #11 (2026-09-10 15:37) — k5: INIT PROPIO FASE F (FrogUI directo)
+================================================================================
+Kernel:  NUESTRO k5 = vmlinux.uImage sha 9e078280... (4.35 MB)
+        = k4 (golden: boot+input+batería OK) con el initramfs stock
+        SUSTITUIDO por NUESTRO initramfs TreeFrog (371 archivos):
+          - linuxrc PROPIO (rootfs/treefrog/linuxrc): monta dev/proc/sys/SD,
+            lanza hcdaemon + cubevol + CPU governor + picoarch+FrogUI DIRECTO
+            — SIN icube, SIN rkgame, SIN zhijack.
+          - Componentes reutilizados del firmware (busybox, lib/, hcdaemon,
+            hotplug_helper): empaquetados por scripts/build-initramfs.sh.
+        commit aab0162, entry 0x803e5780, DTB stock, AVP stock, joydev+check_adc ON.
+
+QUÉ CAMBIA RESPECTO A k4: el kernel es idéntico en config y drivers — SOLO cambia
+  el /init del ramdisk: nuestro script en vez del flujo stock. Si algo falla,
+  está aislado al linuxrc (no al kernel).
+
+RESULTADO ESPERADO: logo hcboot -> nuestro kernel -> NUESTRO init ->
+  menú TreeFrogUI navegable (mismo aspecto que k4).
+  Log nuevo en /mnt/sdcard/log.txt: "=== treefrog-linux init [r36sx] ==="
+  (banner NUESTRO — lo busco post-prueba para confirmar que corrió nuestro init).
+
+POSIBLES SÍNTOMAS SI FALLA (todos aislados al linuxrc):
+  - Logo quieto: init murió temprano (p.ej. console/mount) — log.txt no rotará
+    su banner => igual 0 escrituras.
+  - Menú aparece pero input muerto: cubevol no arrancó (path de la SD).
+  - Pantalla negra con logo hcboot pero sin menú: hcdaemon/bind-mounts.
+
+BACKUPS EN ESTA SD (rollback 30s copiando a /cubegm/):
+  /backups-treelinux/2026-09-10_1537_r36sx/  → k4 2dda38ab (golden test #10)
+  /backups-treelinux/2026-09-10_1502_r36sx/  → k3 795b9da4 (primer boot)
+  /backups-treelinux/2026-09-10_1317_r36sx/  → STOCK golden 53b3e0b3
+
+TRAS LA PRUEBA: reinsertar SD — busco el banner "treefrog-linux init" en log.txt.
