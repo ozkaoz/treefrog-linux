@@ -292,3 +292,19 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
      check_adc para el nivel; sin nodo → lectura falla/0% → warning + poweroff.
 - **Fix k4 (test #10): `CONFIG_CHECK_ADC=y`** (driver del SDK ya en el árbol,
   blob `get_adc_default_val_for_check.o` ya importado). Misma base que k3.
+
+### R32. TEST #10 PASS: batería resuelta — k4 golden propio (2026-09-10 15:30)
+- k4 `2dda38ab` (k3 + CONFIG_CHECK_ADC=y): menú navegable SIN aviso de batería
+  ni apagado (reporte usuario). Forense: 118201+ frames (≈33 min hasta poweroff
+  VOLUNTARIO: linea final `quit: use_hwdisp=1 next_standalone=1` = salida limpia
+  del menú), 12 ciclos hijack, 0 menciones battery/power en logs.
+- Root cause R31 CONFIRMADO y cerrado: check_adc legible → driver.so lee nivel
+  real de batería.
+- **Estado del proyecto tras k4 (kernel de referencia propio):**
+  - FASE D completa: kernel propio reproducible bootea el sistema entero.
+  - FASE E de facto: boot/rootfs/framebuffer/input OK + poweroff limpio
+    observado (pendiente verificación formal de audio/USB por subsistema).
+  - Solución completa = 41 patches Hichip + hcdrivers SDK + 3 opciones de config
+    (INITRAMFS stock, JOYDEV, CHECK_ADC) — cero modificaciones de código fuente.
+- Siguiente: FASE F — initramfs TreeFrog PROPIO (BusyBox nuestro, montar SD,
+  lanzar FrogUI directo sin initramfs stock extraído) → rootfs propio.

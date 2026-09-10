@@ -1,0 +1,48 @@
+set_environment
+init
+load_game
+launch: fork zhijack (keep rkgame alive for input)
+set_environment
+init
+load_game
+launch: fork zhijack (keep rkgame alive for input)
+set_environment
+init
+load_game
+launch: fork zhijack (keep rkgame alive for input)
+set_environment
+init
+load_game
+launch: fork zhijack (keep rkgame alive for input)
+set_environment
+init
+load_game
+launch: fork zhijack (keep rkgame alive for input)
+set_environment
+init
+load_game
+launch: fork zhijack (keep rkgame alive for input)
+set_environment
+init
+load_game
+launch: fork zhijack (keep rkgame alive for input)
+set_environment
+init
+load_game
+launch: fork zhijack (keep rkgame alive for input)
+set_environment
+init
+load_game
+launch: fork zhijack (keep rkgame alive for input)
+set_environment
+init
+load_game
+launch: fork zhijack (keep rkgame alive for input)
+set_environment
+init
+load_game
+launch: fork zhijack (keep rkgame alive for input)
+set_environment
+init
+load_game
+launch: fork zhijack (keep rkgame alive for input)

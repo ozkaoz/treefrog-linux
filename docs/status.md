@@ -1,6 +1,6 @@
 # Status — treefrog-linux
 
-Actualizado: 2026-09-10 15:05 (MILESTONE test #9; k4 fix batería desplegado, test #10)
+Actualizado: 2026-09-10 15:35 (test #10 PASS: batería OK; k4 = golden propio; FASE F iniciada)
 
 ## Working
 
@@ -22,12 +22,13 @@ Actualizado: 2026-09-10 15:05 (MILESTONE test #9; k4 fix batería desplegado, te
 
 ## In progress
 
-- **TEST #10 (2026-09-10 15:02): k4 = k3 + CONFIG_CHECK_ADC (fix batería)** sobre
-  FAT validada. Root cause batería (R31): sin driver hc16xx-check-adc no existen
-  /dev/check_adc1/5 → driver.so stock lee 0% → "batería agotándose" + poweroff.
-  k4 sha `2dda38ab...`, entry `0x803e5780`, verificado con strings check_adc.
-  Esperado: menú navegable SIN aviso de batería. Ver
-  `docs/test-runs/2026-09-10_1502_r36sx.md`.
+- **FASE F (iniciada): initramfs TreeFrog propio.** k4 es el golden de referencia
+  (boot+input+batería OK, 118k+ frames, poweroff limpio). Siguiente paso: BusyBox
+  MIPS mínimo propio montando la SD y lanzando el userland TreeFrogUI sin el
+  initramfs stock extraído (independencia del firmware) → después rootfs propio.
+  Experimento previo de referencia: `boards/r36sx/config/r36sx-kernelonly.fragment.config`
+  + `rootfs/tfinit` (test #3, SD kernel-only — falló por falta de cubegm/, NO del
+  initramfs: hcboot exige sistema completo en SD; con cubegm/ presente funcionará).
 
 ## Blocked
 
@@ -52,19 +53,19 @@ Actualizado: 2026-09-10 15:05 (MILESTONE test #9; k4 fix batería desplegado, te
 
 ## Last known bootable commit
 
-- **abc0595** + build k3 `795b9da4...` (test #9, 2026-09-10): **PRIMER BOOT FÍSICO
-  CONFIRMADO con kernel nuestro** — TreeFrogUI bootea, navega con botones, 24001+
-  frames, sesión estable ~7 min (cortada por bug batería, no por el kernel).
-- Deploy actual en SD: k4 `2dda38ab...` (k3+CHECK_ADC, test #10 PENDIENTE).
-- Backups en SD: k3 (1502), k2 (1437), stock golden (1317).
+- **b70b98b** + build k4 `2dda38ab...` (test #10, PASS TOTAL): kernel de referencia
+  propio — boot completo, input funcional, batería OK, poweroff limpio, 118k+ frames.
+- Historia: k3 `795b9da4` (abc0595, test #9 MILESTONE, primer boot propio, bug batería).
+- Backups en SD: k4 deployado (1502 backup = k3), k2 (1437), stock golden (1317).
 
 ## Last tested board
 
-- R36SX (boot k3 CONFIRMADO test #9; k4 en curso, test #10)
+- R36SX (k4 CONFIRMADO: boot + navegación + batería OK, test #10)
 
 ## Last test result
 
-- **MILESTONE test #9:** boot completo + input OK; fallo residual batería (R31).
+- **PASS TOTAL test #10:** sin aviso de batería; 33 min de sesión estable;
+  poweroff voluntario limpio. FASE D/E de facto completadas.
 
 ## Last test result
 
