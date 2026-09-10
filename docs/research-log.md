@@ -325,3 +325,23 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
 - k6 `bea9c409` (commit 2dce2fa): linuxrc v2 = swap ON + logging/promoción +
   dump free/mounts (K0) + tail stderr picoarch por iter. Kernel idéntico k4/k5
   (entry 0x803e5780) — delta aislado al initramfs. Deploy 16:02, backup k5 en SD.
+
+### R34. Reinterpretación forense: ni k5 ni k6 lanzaron picoarch; k7 = traza por pasos (2026-09-10 16:18)
+- Test #12 = mismo síntoma que #11 y **0 logs nuevos en SD** (todos byte-idénticos
+  al fin del test #11). CORRECCIÓN de R33: los bloques pid 1134/ppid 1104 de
+  picoarch_init.log eran de la SESIÓN K4 (ppid 1103 = zhijack) — NO de k5.
+  **k5 y k6 murieron ANTES de lanzar picoarch, sin escribir nada en SD.**
+- Descartes: busybox stock completo (v1.33.0, strings: swapon/mkswap/mdev/free/
+  mount/mkdir/sync presentes; symlinks /bin completos). kernel de k5/k6 =
+  idéntico config al k4 que bootea con init STOCK. bootargs: init=/linuxrc.
+  => el fallo está en nuestro linuxrc ANTES del loop (fs-base/console/hcdaemon/
+  espera-mdev-SD en v1-v2) y SIN traza visible (v2 logueaba a /tmp que se pierde
+  si muere antes de promover a SD).
+- k7 `c9a4523b`: linuxrc v3 = forense por pasos: traza numerada P01-P13 + L en
+  /run/trace.txt, volcada a /mnt/sdcard/tf-trace.txt con sync POR PASO. La SD
+  se monta MANUAL (mount -t vfat /dev/mmcblk0pN) sin depender de mdev hotplug.
+  Añadidos del stock que v1/v2 omitían: devpts /dev/pts, tmpfs /dev/shm y /run
+  (el inittab stock los monta), y binds COMPLETOS de rootfs (bin/sbin/etc no
+  solo lib/usr). Cap 5 muertes en el loop para no quemar la SD.
+- La próxima lectura de tf-trace.txt (o su ausencia) determina el paso exacto
+  de muerte sin ambigüedad.

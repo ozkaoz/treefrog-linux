@@ -1,6 +1,6 @@
 # Status — treefrog-linux
 
-Actualizado: 2026-09-10 16:05 (test #11: OOM sin swap; k6 = swap+logging, test #12)
+Actualizado: 2026-09-10 16:20 (R34: k5/k6 morían pre-picoarch sin traza; k7 = forense por pasos)
 
 ## Working
 
@@ -22,12 +22,13 @@ Actualizado: 2026-09-10 16:05 (test #11: OOM sin swap; k6 = swap+logging, test #
 
 ## In progress
 
-- **FASE F — TEST #12 (16:02): k6 = init propio + SWAP + logging fix.**
-  Test #11: init propio corrió (picoarch lanzado 2x, fb OK) pero murió antes
-  del core FrogUI — causa raíz probable OOM (stock activa pagefile.sys 128MB
-  vía S99app; nuestro init no). k6: swapon + log /tmp→SD + dump free/mounts +
-  stderr picoarch por iter. Éxito = menú navegable con NUESTRO init completo.
-  Ver `docs/test-runs/2026-09-10_1602_r36sx.md` (R33).
+- **FASE F — TEST #13 (16:18): k7 = linuxrc v3 forense por pasos.** R34 corrigió
+  el diagnóstico: ni k5 ni k6 lanzaron picoarch jamás (los logs que crecieron
+  eran de la sesión k4); nuestro init muere pre-loop sin traza. k7 traza
+  P01-P13 a /mnt/sdcard/tf-trace.txt con sync por paso; SD montada manual
+  (sin mdev); añade devpts/shm/run y binds completos de rootfs como el stock.
+  La próxima lectura de tf-trace.txt = punto exacto de muerte.
+  Ver `docs/test-runs/2026-09-10_1618_r36sx.md`.
 
 ## Blocked
 

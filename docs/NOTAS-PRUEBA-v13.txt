@@ -1,0 +1,30 @@
+treefrog-linux TEST #13 (2026-09-10 16:18) — k7: init v3 forense por pasos
+===============================================================================
+Kernel:  NUESTRO k7 = vmlinux.uImage sha c9a4523b... (kernel idéntico al golden k4)
+        commit 1750ca9, entry 0x803e5780, DTB stock, AVP stock.
+
+TEST #12 RESULTÓ IGUAL QUE #11 Y REVELÓ ALGO IMPORTANTE (R34):
+  - NINGÚN log creció (picoarch_init/frogui_crash/tfhijack/log idénticos byte a byte
+    al fin del test #11). Es decir: los bloques pid 1134 que creí de k5 eran de la
+    SESIÓN K4 (ppid 1103 = zhijack). NI k5 NI k6 LANZARON PICORCH JAMÁS.
+  - Nuestro init muere SIEMPRE antes del loop, sin escribir NADA (ni siquiera a
+    /tmp→SD). Con busybox verificado completo (swapon/mdev/free OK en 1.33).
+  - El init STOCK (k4) sí funcionaba: diferencia estructural = /sbin/init con
+    inittab+mdev vs nuestro /linuxrc directo.
+
+K7 = linuxrc v3 FORENSE POR PASOS: traza numerada (P01...P13, L=loop) escrita
+  en /run/trace.txt y VOLCADA A /mnt/sdcard/tf-trace.txt con sync EN CADA PASO.
+  La SD se monta MANUALMENTE (mount -t vfat /dev/mmcblk0p1) sin depender de mdev.
+  Devpts/shm/run montados como el inittab stock. Cubevol+env igual que zhijack.
+  Loop FrogUI con cap de 5 muertes (para no quemar la SD en loop infinito).
+
+RESULTADO ESPERADO: menú TreeFrogUI navegable (como k4) pero con NUESTRO init.
+  El archivo tf-trace.txt en la SD mostrará exactamente hasta qué paso llegó.
+
+SI FALLA: /mnt/g/tf-trace.txt (o su ausencia) = punto exacto de muerte:
+  - Sin tf-trace.txt: murió antes de P06 (mount vfat falló o muerte en fs-base)
+  - traza corta en P0X: el paso X es el culpable
+  - traza hasta "=== LOOP frogui" + "L frogui rc=NN": picoarch muere con código NN
+
+BACKUPS EN SD: k6 (1618), k5 (1602... es 1602), k4 golden (1502), stock (1317).
+TRAS LA PRUEBA: reinsertar SD → leo /mnt/g/tf-trace.txt = respuesta definitiva.

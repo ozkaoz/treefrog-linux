@@ -1,111 +1,109 @@
 #!/bin/sh
-# treefrog-linux linuxrc — FASE F: init propio que lanza FrogUI directo
+# treefrog-linux linuxrc v3 — FASE F + forense por pasos
 #
-# Reemplaza el flujo stock (icube -> rkgame -> zhijack) del initramfs del
-# firmware. Basado en la receta PROBADA de cubegm/zhijack.sh (test #9/#10 con
-# k3/k4: 118k+ frames, navegación, batería OK), reducida a lo que FrogUI
-# necesita para arrancar como init:
-#   1. devtmpfs/proc/sysfs + /tmp (tmpfs)
-#   2. hcdaemon (puente AMPRPC al AVP stock — audio/display)
-#   3. mdev hotplug + montar la SD en /mnt/sdcard (bind como S99app stock)
-#   4. cubevol (gpio/ADC -> /tmp/joy_key: el input de picoarch/FrogUI)
-#   5. CPU governor performance
-#   6. TF_DEVICE env + loop picoarch + frogui_libretro.so con el mismo
-#      protocolo /tmp/frogui_launch.txt que usa zhijack.sh (standalone/games)
-#
-# Logs: /mnt/sdcard/log.txt SOLO si existe (opt-in, como zhijack).
+# v3: tras test #11/#12 (0 escrituras SD con init propio; k4 stock-init OK),
+# el init propio moría pre-picoarch SIN traza. Esta version traza cada paso
+# a la SD (montada manualmente aqui, sin depender de mdev) con sync por paso:
+# el ULTIMO paso en /mnt/sdcard/tf-trace.txt = punto exacto de muerte.
+# Ademas: si el fb esta usable, pinta el numero de paso en pantalla.
 
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+T=/mnt/sdcard/tf-trace.txt   # se activa cuando la SD se monta (paso 7)
 
-# --- 1. filesystems básicos ----------------------------------------------------
-/bin/busybox mkdir -p /dev /proc /sys /tmp /media /mnt/sdcard
-/bin/busybox mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
-/bin/busybox mount -t proc proc /proc 2>/dev/null || true
-/bin/busybox mount -t sysfs sysfs /sys 2>/dev/null || true
-/bin/busybox mount -t tmpfs tmpfs /tmp 2>/dev/null || true
-/bin/busybox mount -t tmpfs tmpfs /media 2>/dev/null || true
+# --- P01: filesystems base -----------------------------------------------------
+/bin/busybox mkdir -p /dev/pts /dev/shm /proc /sys /tmp /run /media/sd1 /mnt/sdcard
+/bin/busybox mount -t devtmpfs devtmpfs /dev
+/bin/busybox mount -t proc proc /proc
+/bin/busybox mount -t sysfs sysfs /sys
+/bin/busybox mount -t tmpfs tmpfs /tmp
+/bin/busybox mount -t tmpfs tmpfs /run
+/bin/busybox mount -t devpts devpts /dev/pts -o gid=5,mode=620,ptmxmode=0666
+/bin/busybox mount -t tmpfs tmpfs /dev/shm -o mode=0777
 
-# console al stdout del kernel (hcboot entrega /dev/console)
+TRACE=/run/trace.txt
+echo "P01 fs-base ok" > $TRACE
+
+# --- P02: consola --------------------------------------------------------------
 if (/bin/busybox exec 0</dev/console) 2>/dev/null; then
     /bin/busybox exec 0</dev/console
     /bin/busybox exec 1>/dev/console
     /bin/busybox exec 2>/dev/console
 fi
+echo "P02 console ok" >> $TRACE
 
-# log: opt-in SIEMPRE en RAM (la SD aun no esta montada aqui); tras montar,
-# si existe /mnt/sdcard/log.txt lo promovemos (forense como zhijack)
-LOG=/tmp/tf-init.log
-echo "=== treefrog-linux init [r36sx] $(date '+%H:%M:%S') ===" > "$LOG"
-
-# --- 2. hcdaemon: puente AMPRPC hacia el AVP stock (audio/display) --------------
+# --- P03: hcdaemon (AMPRPC -> AVP) ---------------------------------------------
 /usr/bin/hcdaemon &
-echo "hcdaemon started" >> "$LOG"
+echo "P03 hcdaemon ok" >> $TRACE
 
-# --- 3. hotplug + montar la SD --------------------------------------------------
-/bin/busybox echo /sbin/mdev > /proc/sys/kernel/hotplug 2>/dev/null || true
-/bin/busybox mdev -s 2>/dev/null || true
-
-# esperar la SD (como S99app stock: /media/*/cubegm/icube existe)
-MNTDIR=""
-i=0
-while [ $i -lt 40 ]; do
-    for d in /media/*; do
-        [ -e "$d/cubegm/icube" ] && MNTDIR="$d" && break
+# --- P04: detectar particion SD (sin mdev: directa de /dev) --------------------
+SDDEV=""
+for n in 1 2 3 4; do
+    for d in mmcblk0p$n mmcblk1p$n; do
+        [ -b /dev/$d ] && SDDEV=/dev/$d && break
     done
-    [ -n "$MNTDIR" ] && break
-    /bin/busybox sleep 0.5
-    i=$((i+1))
-    /bin/busybox mdev -s 2>/dev/null || true
+    [ -n "$SDDEV" ] && break
 done
+[ -z "$SDDEV" ] && SDDEV=/dev/mmcblk0p1
+echo "P04 sddev=$SDDEV" >> $TRACE
 
-if [ -z "$MNTDIR" ]; then
-    echo "FATAL: SD no encontrada (sin /media/*/cubegm/icube) tras 20s" >> "$LOG"
-    # mantener vivo el kernel para forense por consola
-    while :; do /bin/busybox sleep 10; done
+# --- P05: montar la SD DIRECTAMENTE (vfat) --------------------------------------
+if /bin/busybox mount -t vfat -o iocharset=utf8 $SDDEV /media/sd1; then
+    echo "P05 mount vfat ok" >> $TRACE
+else
+    echo "P05 mount vfat FALLO, probando auto" >> $TRACE
+    /bin/busybox mount -t auto $SDDEV /media/sd1 || echo "P05 auto FALLO" >> $TRACE
 fi
-echo "sd: $MNTDIR -> /mnt/sdcard" >> "$LOG"
-/bin/busybox mount --bind "$MNTDIR" /mnt/sdcard
 
-# promover el log a la SD si el usuario lo tiene activado (opt-in como zhijack)
-if [ -f /mnt/sdcard/log.txt ]; then
-    /bin/busybox mv /mnt/sdcard/log.txt /mnt/sdcard/log.txt.prev 2>/dev/null
-    /bin/busybox cat "$LOG" > /mnt/sdcard/log.txt
-    LOG=/mnt/sdcard/log.txt
+# --- P06: bind como S99app + traza visible en SD --------------------------------
+if [ -e /media/sd1/cubegm/icube ]; then
+    /bin/busybox mount --bind /media/sd1 /mnt/sdcard
+    echo "P06 bind ok" >> $TRACE
+else
+    echo "P06 SIN cubegm (SD mal montada?)" >> $TRACE
+    /bin/busybox sleep 20   # ventana para apagar y no quemar SD
+    /bin/busybox reboot -f
+fi
+
+# traza a la SD (persistente)
+/bin/busybox cat $TRACE > /mnt/sdcard/tf-trace.txt
+TRACE=/mnt/sdcard/tf-trace.txt
+echo "P07 traza-en-SD ok" >> $TRACE
+/bin/busybox sync
+
+# --- P08: swap (como S99app stock) ----------------------------------------------
+if [ -f /mnt/sdcard/cubegm/pagefile.sys ]; then
+    /bin/busybox swapon /mnt/sdcard/cubegm/pagefile.sys 2>>$TRACE
+    /bin/busybox free | /bin/busybox grep -i swap >> $TRACE
+    echo "P08 swapon intentado" >> $TRACE
     /bin/busybox sync
 fi
 
-# swap: la consola es RAM<=128MB y el stock activa pagefile.sys (S99app:
-# swapon /mnt/sdcard/cubegm/pagefile.sys) — sin swap, picoarch+FrogUI mueren
-# tras el fb-init por OOM (evidencia test #11: 2 muertes tempranas de picoarch
-# pid 1134, frogui_crash retro_init repetido sin completar el bucle)
-if [ -f /mnt/sdcard/cubegm/pagefile.sys ]; then
-    /bin/busybox swapon /mnt/sdcard/cubegm/pagefile.sys 2>>"$LOG"
-    /bin/busybox free 2>/dev/null | /bin/busybox grep -i swap >> "$LOG" \
-        && echo "swap ON: pagefile.sys" >> "$LOG"
-else
-    echo "WARN: sin pagefile.sys — FrogUI puede morir por RAM" >> "$LOG"
-fi
-
-# rootfs stock de la SD: binarios (picoarch, drivers, cubevol alternativo)
-if [ -d "$MNTDIR/rootfs" ]; then
-    for sub in lib usr lib32; do
-        [ -d "$MNTDIR/rootfs/$sub" ] && /bin/busybox mount --bind "$MNTDIR/rootfs/$sub" "/$sub"
+# --- P09: rootfs de la SD (como S99app completo) ----------------------------------
+MNTDIR=/media/sd1
+if [ -d $MNTDIR/rootfs ]; then
+    for sub in lib usr bin sbin etc hcdemo_files; do
+        [ -d $MNTDIR/rootfs/$sub ] && /bin/busybox mount --bind $MNTDIR/rootfs/$sub /$sub
     done
+    echo "P09 rootfs binds ok" >> $TRACE
 fi
-# librerías del propio cubegm (driver.so, etc.)
-export LD_LIBRARY_PATH=/mnt/sdcard/cubegm/lib:/mnt/sdcard/cubegm/usr/lib
 
-# --- 4. input: cubevol (gpio -> /tmp/joy_key) — vive en la SD, no en el ramdisk --
+# --- P10: hotplug+mdev LUEGO de montar (para USB futuro) --------------------------
+/bin/busybox echo /sbin/mdev > /proc/sys/kernel/hotplug 2>/dev/null
+/bin/busybox mdev -s 2>/dev/null
+echo "P10 mdev ok" >> $TRACE
+
+# --- P11: cubevol (input gpio -> /tmp/joy_key) -------------------------------------
 CV=/mnt/sdcard/rootfs/usr/bin/cubevol
 [ -x "$CV" ] && "$CV" &
-echo "cubevol started ($CV)" >> "$LOG"
+echo "P11 cubevol ($CV)" >> $TRACE
 
-# --- 5. CPU performance (receta zhijack) ---------------------------------------
+# --- P12: CPU performance ----------------------------------------------------------
 for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-    [ -w "$g" ] && /bin/busybox echo performance > "$g" 2>/dev/null
+    [ -w "$g" ] && /bin/busybox echo performance > "$g"
 done
+echo "P12 cpufreq ok" >> $TRACE
 
-# --- 6. entorno TreeFrogUI + loop FrogUI directo --------------------------------
+# --- P13: env TreeFrogUI -----------------------------------------------------------
 cat > /tmp/tfdevice.env <<EOF
 TF_DEVICE=R36SX
 TF_PANEL_W=640
@@ -119,45 +117,41 @@ TF_DRIVER=/mnt/sdcard/cubegm/driver_r36sx.so
 EOF
 . /tmp/tfdevice.env
 export TF_DEVICE TF_PANEL_W TF_PANEL_H TF_UI_SCALE TF_DRIVER
+export LD_LIBRARY_PATH=/mnt/sdcard/cubegm/lib:/mnt/sdcard/cubegm/usr/lib
+echo "P13 env ok" >> $TRACE
+/bin/busybox sync
 
+# --- LOOP: FrogUI directo -------------------------------------------------------------
 PICOARCH=/mnt/sdcard/cubegm/picoarch
 PICOARCH_HI=/mnt/sdcard/cubegm/picoarch_hi
 FROGUI_CORE=/mnt/sdcard/cubegm/cores/frogui_libretro.so
 LAUNCH=/tmp/frogui_launch.txt
 
-# estado del sistema al entrar al loop (diagnóstico K0)
-/bin/busybox free >> "$LOG" 2>/dev/null
-echo "--- /proc/mounts:" >> "$LOG"; /bin/busybox cat /proc/mounts >> "$LOG" 2>/dev/null
-echo "init complete; entering frogui loop" >> "$LOG"
+/bin/busybox free >> $TRACE
+echo "=== LOOP frogui (init v3) ===" >> $TRACE
+/bin/busybox sync
 
 ITER=0
 while :; do
     ITER=$((ITER+1))
     /bin/busybox rm -f "$LAUNCH"
-    echo "--- iter $ITER: frogui ---" >> "$LOG"
+    echo "L iter $ITER frogui" >> $TRACE
     "$PICOARCH" "$FROGUI_CORE" "$FROGUI_CORE" >> /tmp/treefrog_ui.log 2>&1
     RC=$?
-    echo "frogui exited rc=$RC" >> "$LOG"
-    # stderr de picoarch al log SD para diagnóstico (las muertes tempranas
-    # del test #11 no dejaban rastro: /tmp se pierde al apagar)
-    /bin/busybox tail -20 /tmp/treefrog_ui.log >> "$LOG" 2>/dev/null
-    /bin/busybox free >> "$LOG" 2>/dev/null
+    echo "L frogui rc=$RC" >> $TRACE
+    /bin/busybox tail -5 /tmp/treefrog_ui.log >> $TRACE 2>/dev/null
+    /bin/busybox sync
+    [ "$ITER" -ge 5 ] && { echo "L 5 muertes: STOP" >> $TRACE; /bin/busybox sleep 60; }
 
     [ -f "$LAUNCH" ] || { /bin/busybox sleep 1; continue; }
-
-    # protocolo de lanzamiento (idéntico al de zhijack.sh / FrogUI)
     KIND=$(/bin/busybox sed -n 1p "$LAUNCH")
     if [ "$KIND" = standalone ]; then
         BIN_PATH=$(/bin/busybox sed -n 2p "$LAUNCH")
         ARG_PATH=$(/bin/busybox sed -n 3p "$LAUNCH")
         /bin/busybox rm -f "$LAUNCH"
         /bin/busybox sleep 0.3
-        echo "--- iter $ITER: standalone [$BIN_PATH] ---" >> "$LOG"
-        if [ -n "$ARG_PATH" ]; then
-            "$BIN_PATH" "$ARG_PATH" >> /tmp/treefrog_ui.log 2>&1
-        else
-            "$BIN_PATH" >> /tmp/treefrog_ui.log 2>&1
-        fi
+        echo "L iter $ITER standalone $BIN_PATH" >> $TRACE
+        [ -n "$ARG_PATH" ] && "$BIN_PATH" "$ARG_PATH" >> /tmp/treefrog_ui.log 2>&1 || "$BIN_PATH" >> /tmp/treefrog_ui.log 2>&1
         /bin/busybox sleep 0.2
         continue
     fi
@@ -170,9 +164,9 @@ while :; do
         case "$CORE_PATH" in
             *gpsp*|*pcsx*|*ps1*|*ppsspp*) [ -f "$PICOARCH_HI" ] && BIN="$PICOARCH_HI" ;;
         esac
-        echo "--- iter $ITER: game [$CORE_PATH] via $BIN ---" >> "$LOG"
+        echo "L iter $ITER game $CORE_PATH via $BIN" >> $TRACE
         "$BIN" "$CORE_PATH" "$ROM_PATH" >> /tmp/treefrog_ui.log 2>&1
-        echo "game exited rc=$?" >> "$LOG"
+        echo "L game rc=$?" >> $TRACE
     fi
     /bin/busybox sleep 0.2
 done
