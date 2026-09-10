@@ -365,3 +365,21 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
   Verificado en el cpio embebido del k8: /init 6425 B = script v3 (P01-P13).
 - k8 `9ded9df9` (entry 0x803e5780, kernel idéntico golden k4, cpio 2e48fb67,
   372 entradas). Deploy 16:30 = test #14.
+
+### R36. Test #14 falló igual → el CPIO regenerado es el asesino; k9 = cirugía binaria (16:48)
+- Test #14 (k8 `9ded9df9`, /init correcto verificado en cpio embebido, script
+  sin CRLF/UTF-8-limpio): MISMO síntoma, 0 escrituras, tf-trace ausente.
+- Con el kernel byte-idéntico al golden k4 (que bootea con cpio stock), la
+  única variable restante k4↔k5-k8 = el CPIO REGENERADO. Diferencias del
+  regenerado (R36 forense cpio-diff): "." con uid=1000 (stock uid=0), orden de
+  entradas distinto, S-scripts/inittab/init eliminados (cambian el layout
+  completo), 371 vs 380 entradas. El kernel 4.4 descomprime initramfs con su
+  parser estricto — sin UART el fallo es invisible; con k3/k4 (cpio stock)
+  SIEMPRE funcionó. Conclusión: algo del cpio regenerado mataba el unpacking.
+- **Fix: CIRUGÍA BINARIA** — `treefrog-initramfs-surgical.cpio` (dae5066d):
+  cpio STOCK byte a byte con SOLO el contenido de /init reemplazado por
+  nuestro linuxrc v3 (header fsize actualizado, mode/uid/mtime/inode
+  preservados, resto 379 entradas intactas). Elimina TODA diferencia
+  estructural como variable; la única delta k9↔k4-golden = el script /init.
+- k9 `83b023a2` (entry 0x803e5780, commit base 41fcca4). Deploy 16:48 =
+  test #15. Si falla, la traza por pasos señala la línea exacta dentro de v3.

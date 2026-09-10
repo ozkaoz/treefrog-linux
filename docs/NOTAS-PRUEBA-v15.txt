@@ -1,0 +1,30 @@
+treefrog-linux TEST #15 (2026-09-10 16:48) — k9: CPIO QUIRÚRGICO (stock byte-idéntico + /init nuestro)
+================================================================================================
+Kernel:  k9 = vmlinux.uImage sha 83b023a2... entry 0x803e5780 (kernel idéntico golden k4)
+
+TEST #14 CONFIRMÓ (R36): el problema NO era /init ni el script — era el CPIO
+  REGENERADO. k8 (/init correcto, script sin CRLF) también murió sin escribir
+  nada. Única variable k4-BOOTA vs k8-MUERE: el cpio regenerado por
+  `find|cpio -o` vs el stock original. Diferencias estructurales encontradas
+  (uid de "." = 1000 vs 0, orden, pads, 371 vs 380 entradas: S-scripts borrados
+  cambian TODO el layout) — alguna de ellas mataba el unpacking del kernel.
+
+FIX DEFINITIVO: CIRUGÍA BINARIA del cpio stock:
+  - TOMO el cpio stock byte a byte (el MISMO que bootea en k3/k4)
+  - Reemplazo SOLO el contenido del archivo /init (nuestro linuxrc v3,
+    con traza por pasos P01-P13 → /mnt/sdcard/tf-trace.txt)
+  - Resto: 379 entradas stock intactas (busybox, S-scripts, inittab, hcdaemon...)
+  - VERIFICADO: parseo correcto, /init = v3, 380 entradas
+  NOTA: los S-scripts del stock siguen presentes (inofensivos: nada los invoca
+  sin /sbin/init; nuestro /init los reemplaza funcionalmente). Si boota, una
+  siguiente iteración los puede retirar con cirugía adicional.
+
+RESULTADO ESPERADO: menú TreeFrogUI navegable — y tf-trace.txt en la SD con
+  P01...P13 + LOOP + iter (evidencia de que corrió NUESTRO init).
+
+SI FALLA: la única diferencia restante k4↔k9 es el CONTENIDO de /init
+  (script v3 vs script stock 462B) → sería un fallo DENTRO de nuestro script
+  (visible en traza si pasa de P05) o del propio v3 pre-P01.
+
+BACKUPS EN SD: k8 (1648), k7 (1630), k6 (1618), k5 (1602), k4 golden (1502), stock (1317).
+TRAS LA PRUEBA: reinsertar SD → leo tf-trace.txt (o su ausencia).
