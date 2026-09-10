@@ -45,11 +45,14 @@ fi
 # Uso: build-kernel.sh <board> kernelonly  (base = kernel-squashfs.config + fragment propio)
 KERNEL_ONLY=0
 BASE_VARIANT="$CONFIG_VARIANT"
+FRAGMENT=""
 if [ "$CONFIG_VARIANT" = "kernelonly" ]; then
   KERNEL_ONLY=1
   BASE_VARIANT="squashfs"
   FRAGMENT="$ROOT/boards/$DTS_NAME/config/$DTS_NAME-kernelonly.fragment.config"
   [ -f "$FRAGMENT" ] || { echo "ERROR: falta $FRAGMENT"; exit 1; }
+elif [ -f "$ROOT/boards/$DTS_NAME/config/$DTS_NAME.fragment.config" ]; then
+  FRAGMENT="$ROOT/boards/$DTS_NAME/config/$DTS_NAME.fragment.config"
 fi
 KERNEL_CONFIG="$VENDOR_BOARD/kernel-configs/$KERNEL_VERSION/kernel-$BASE_VARIANT.config"
 [ -f "$KERNEL_CONFIG" ] || { echo "ERROR: no existe $KERNEL_CONFIG"; exit 1; }

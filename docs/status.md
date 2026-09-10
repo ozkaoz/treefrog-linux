@@ -1,6 +1,6 @@
 # Status — treefrog-linux
 
-Actualizado: 2026-09-09 19:35 (FASE A/B/C/D completadas — deploy físico realizado)
+Actualizado: 2026-09-10 02:35 (FASE A/B/C/D completadas; test #5 en curso)
 
 ## Working
 
@@ -22,14 +22,16 @@ Actualizado: 2026-09-09 19:35 (FASE A/B/C/D completadas — deploy físico reali
 
 ## In progress
 
-- **PRUEBA KERNEL-ONLY (SD limpia):** uImage `465d5fdb...` (kernel 4.4.186+Hichip con
-  initramfs tfinit propio + DTB stock embebido) en SD borrada por completo — cero
-  TreeFrogUI, cero SO stock. Esperado: barras de color en pantalla si el kernel vive.
-  Ver docs/test-runs/2026-09-09_2255_r36sx-kernelonly.md.
+- **TEST #5 (2026-09-10 02:30):** sistema TreeFrogUI completo + nuestro kernel #2 JOYDEV.
+  Restaurado el estado 21:39 (que booteó en test #1) + `out/r36sx/vmlinux.uImage`
+  `fe16c9c4...` (joydev). Ver `docs/test-runs/2026-09-10_0230_r36sx.md`.
+  Conclusión de test #3/#4: una SD con SOLO kernel+AVP+DTB (kernel-only) no arranca —
+  hcboot requiere el sistema `cubegm/` completo. El mensaje `Please insert TF card`
+  aparece al no poder montar la FAT (geometría/causa aún por confirmar en test #5).
 
 ## Blocked
 
-- (nada; esperando prueba física)
+- (nada; esperando prueba física del test #5)
 
 ## Missing
 
@@ -48,15 +50,16 @@ Actualizado: 2026-09-09 19:35 (FASE A/B/C/D completadas — deploy físico reali
 
 ## Last known bootable commit
 
-- **c4db33c** (kernel #2 con joydev, deployado 21:54, PENDIENTE de confirmación física).
-  Boot anterior confirmado físicamente: 81ecf9a (kernel #1 — sistema completo arriba,
+- **ac04c73** + build `fe16c9c4...` (kernel #2 JOYDEV, deploy test #5, PENDIENTE confirmación).
+- Boot anterior confirmado físicamente: 81ecf9a (kernel #1 — sistema completo arriba,
   menú renderizado, input muerto por falta de joydev; test-run 1934).
 
 ## Last tested board
 
-- R36SX (2 boots físicos con kernels propios; diagnóstico completo en test-runs/)
+- R36SX (boot confirmado con nuestro kernel en test #1; test #5 en curso)
 
 ## Last test result
 
 - Kernel #1 (81ecf9a): BOOT OK, menú renderizado, input muerto (joydev) → fix aplicado.
-- Kernel #2 (c4db33c + fragment joydev, `9f5d3f9c...`): deployado, esperando re-test físico.
+- Kernel #2 (JOYDEV, `fe16c9c4...`): deploy en sistema completo, PENDIENTE test físico (#5).
+- Test #3/#4 (SD kernel-only, FAT reformateada): `Please insert TF card` — no arrancable.

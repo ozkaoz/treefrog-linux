@@ -1,0 +1,16 @@
+treefrog-linux TEST #5 (2026-09-10 02:30) — sistema TreeFrogUI completo + kernel #2 JOYDEV
+=============================================================================
+Kernel: NUESTRO vmlinux.uImage sha fe16c9c45e2553cfb3d3a2003feccbce0667f0ea1e5b98983cd08f99f8d45c58
+        Linux 4.4.186 + 41 patches Hichip + linux-drivers + CONFIG_INPUT_JOYDEV=y
+        (build reproducible out/r36sx, entry 0x803e4930, toolchain Codescape 6.3.0)
+AVP:    stock (a9788995...) — NO tocado
+DTB:    stock byte-identico (1258f1eb...)
+Sistema: restaurado COMPLETO desde backup 2026-09-09_2139 (TreeFrogUI + rootfs stock ramfs
+        + picoarch + FrogUI) — este es el estado que en el test #1 booteo el sistema entero.
+
+ESPERADO: logo hcboot -> nuestro kernel -> init stock -> zhijack -> FrogUI con INPUT
+FUNCIONAL (joydev activado; antes el unico fallo conocido era input muerto sin joydev).
+
+RESTAURAR KERNEL STOCK: boards/r36sx/stock/vmlinux.uImage (sha 53b3e0b3...)
+ROLLBACK SD KERNEL-ONLY: D:\R36SX\sd-state-preserved_2026-09-10_0209\
+BACKUP SISTEMA COMPLETO: D:\R36SX\sd-full-backups\2026-09-09_2139_treefrog-test-sd

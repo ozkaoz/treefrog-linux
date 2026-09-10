@@ -148,3 +148,39 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
 - Fragment activo verificado; uImage sha `9f5d3f9c8de334ebf27de78b7a4373c444f8ba608bdc8dc6d83013091a4f21a2`,
   entry `0x803e4930`, 2702874 B. `strings` del vmlinux.bin: joydev presente (== stock).
 - Deploy 21:54 con backup previo en SD. Pendiente re-test físico.
+
+## 2026-09-10 — FASE E (test #5: sistema completo + kernel #2 JOYDEV)
+
+### R24. Tests #3/#4: SD kernel-only no arranca — «Please insert TF card» (geometría FAT vs contenido)
+- Test #3 (FAT corrupta + 3 archivos) y test #4 (FAT reformateada física sana + 3 archivos):
+  MISMO síntoma «Please insert TF card». Ninguna escritura del kernel en SD (log.txt no rotado).
+- Dato: la SD actual (60 GB, «Generic STORAGE DEVICE») tiene partición única FAT32
+  IsActive=False, offset 1 MiB, clúster 32768 B (32 KB). El SD que booteó en test #1 era la
+  original stock 2026-08-24 (otra tarjeta), solo preservada como árbol de archivos (sin MBR).
+- Conclusión: con solo kernel+AVP+DTB hcboot no encuentra el sistema; contenido del SD es
+  co-causa. Geometría FAT/MBR (activa/clúster) sigue sin evidencia binaria (driver FAT vive
+  en submodule hcrtos/hcboot, no extraído del tar).
+- Evidencia filesystem (read-only): `Get-Partition G` → Offset 1048576, Type FAT32 XINT13,
+  IsActive=False. `Get-Volume G` → AllocationUnitSize 32768, HealthStatus Healthy.
+
+### R25. Rebuild r36sx squashfs + fix build-kernel.sh (bug FRAGMENT unbound)
+- Bug en HEAD (commit ac04c73): `scripts/build-kernel.sh` usaba $FRAGMENT con `set -u` en
+  el flujo squashfs normal sin inicializarlo → «FRAGMENT: unbound variable». Fix: inicializar
+  `FRAGMENT=""` y activar el fragment de board (`boards/<board>/config/<board>.fragment.config`)
+  en el flujo normal, no solo en kernelonly.
+- `scripts/build-kernel.sh r36sx squashfs` → out/r36sx/vmlinux.uImage sha
+  `fe16c9c45e2553cfb3d3a2003feccbce0667f0ea1e5b98983cd08f99f8d45c58`, entry `0x803e4930`,
+  2702876 B (MIPS legacy gzip uImage, load 0x80000000), dtb.bin == stock (`1258f1eb`).
+  Fragment JOYDEV activo verificado post-merge (CONFIG_INPUT_JOYDEV=y).
+- Manifest completo en out/r36sx/manifest.json (git_commit ac04c73, config_sha256
+  cc9e3854..., config_fragment_sha256 d2db0a43..., dts_sha256 ddb52bdd...).
+
+### R26. Test #5: restauración sistema completo + deploy kernel #2
+- Estado preservado: `D:\R36SX\sd-state-preserved_2026-09-10_0209` (SHA256SUMS incluidos).
+- rsync del backup 21:39 (4692 archivos) a /mnt/g + copia de vmlinux.uImage fe16c9c4... +
+  sync. Post-copia: 4693 archivos, triada cubegm correcta (kernel fe16c9c4, avp a9788995,
+  dtb 1258f1eb), espacio 1.2 GB usados. Partición sigue IsActive=False (Set-Partition no
+  disponible sin elevación admin; diskpart igual).
+- Documentación: `docs/test-runs/2026-09-10_0230_r36sx.md` + NOTAS-PRUEBA.txt v5 en SD.
+- PENDIENTE: prueba física; si vuelve «TF card» → la causa es geometría FAT/MBR y se
+  reformateará (con backup previo) a clúster 4K + partición activa.

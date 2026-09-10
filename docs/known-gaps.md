@@ -1,4 +1,4 @@
-# Known gaps — lo que NO se sabe (al 2026-09-09, post-FASE D)
+# Known gaps — lo que NO se sabe (al 2026-09-10, post-test #5)
 
 Todo lo listado aquí es DESCONOCIDO hasta que exista evidencia en `docs/research-log.md`.
 Prohibido rellenar con suposiciones.
@@ -18,6 +18,7 @@ Prohibido rellenar con suposiciones.
 10. **Baseline kernel del resto de consolas** (¿5.12.4 en alguna?) — sin evidencia. Los strings del stock R36SX confirman 4.4.186.
 11. **avp_entry del stock**: nuestro fixup derivó `0xabda4000` (sysmem 0xbda2e50 + 0x1000 → page-aligned KSEG1). Cómo calcula el stock real su entry AVP no se ha verificado binariamente (irrelevante para el kernel Linux; el AVP stock se conserva igual).
 12. **Comportamiento del init=/linuxrc stock** (ramfs): qué monta/lanza exactamente (rkgame/menu stock → hook FrogUI). Sin dumps del rootfs aún (FASE E/F).
+13. **Requisitos de geometría FAT/MBR de hcboot para montar la SD**: los test #3/#4 (SD kernel-only con FAT reformateada por Windows: offset partición 1 MB, clúster 32 KB, partición MBR `IsActive=False`) dieron `Please insert TF card` aunque la FAT estaba sana y los archivos corectos. Hipótesis: hcboot necesita la partición activa y/o geometría FAT distinta (4 KB) y/o el sistema `cubegm/` completo. En test #5 se restaura el sistema completo sobre el FAT actual para aislar si el contenido es co-causa. Definición de la partición "callável" por hcboot sigue SIN evidencia binaria (el driver FAT vive en el hcrtos/hcboot submodule, no extraído del tar).
 
 ## Procedimiento para cerrar un gap
 
