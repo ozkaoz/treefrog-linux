@@ -1,0 +1,26 @@
+treefrog-linux TEST #10 (2026-09-10 15:02) — k4 = k3 + CHECK_ADC (fix batería)
+=====================================================================
+Kernel:  NUESTRO k4 = vmlinux.uImage sha 2dda38ab... (4.35 MB)
+        = k3 (boot MILESTONE test #9) + CONFIG_CHECK_ADC=y
+        commit base 7247914, entry 0x803e5780, DTB stock, AVP stock,
+        initramfs stock embebido, joydev ON.
+
+FIX BATERÍA (R31): el DTS lee la batería por /dev/check_adc1 (nivel) y
+  /dev/check_adc5 (cargando) — nodos del driver hc16xx-check-adc que el SDK trae
+  default-OFF. k3 no lo llevaba → driver.so leía 0% → "batería agotándose" +
+  apagado a los ~7 min (aunque estuviera cargando). k4 crea /dev/check_adc*.
+
+RESULTADO ESPERADO: menú TreeFrogUI navegable (como test #9) Y SIN el mensaje
+  de batería ni apagado — sesión indefinida con la batería puesta/cargando.
+  (El icono/porcentaje de batería del menú debería mostrar valores reales.)
+
+SI APARECE OTRA VEZ el aviso de batería: la lectura falla por otra vía
+  (calibración ADC distinta) → capturo dmesg via zhijack y ajusto.
+
+BACKUPS EN ESTA SD (rollback en 30s copiando a /cubegm/):
+  /backups-treelinux/2026-09-10_1502_r36sx/  → k3 795b9da4 (boot OK del test #9)
+  /backups-treelinux/2026-09-10_1437_r36sx/  → k2 fe16c9c4
+  /backups-treelinux/2026-09-10_1317_r36sx/  → STOCK golden 53b3e0b3
+
+TRAS LA PRUEBA: reinsertar SD — si todo OK, el log mostrará la sesión completa
+  y arrancamos FASE E (poweroff limpio, audio, USB, dmesg runtime).

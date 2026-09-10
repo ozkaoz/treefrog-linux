@@ -1,6 +1,6 @@
 # Status — treefrog-linux
 
-Actualizado: 2026-09-10 14:45 (R30 ROOT CAUSE: initramfs stock ausente en k1/k2; k3 desplegado)
+Actualizado: 2026-09-10 15:05 (MILESTONE test #9; k4 fix batería desplegado, test #10)
 
 ## Working
 
@@ -10,26 +10,24 @@ Actualizado: 2026-09-10 14:45 (R30 ROOT CAUSE: initramfs stock ausente en k1/k2;
 - Inventario de `/mnt/d/GitHub/KERNEL` completo con hashes (`docs/source-inventory.md`).
 - Matriz BSP presentes/faltantes (`docs/bsp-reconstruction.md`): TODAS las piezas críticas localizadas.
 - FASE C: pipeline reproducible completo — fetch (kernel.org verificado) → 41 patches + linux-drivers + yaffs2 → vmlinux + manifest. Smoke test a3100 OK.
-- FASE D (R36SX):
-  - Kernel stock analizado (vermagic/toolchain/formato idénticos a nuestro pipeline).
-  - DTB stock decompilado → `boards/r36sx/` board profile completo con round-trip BYTE-IDENTICO.
-  - `out/r36sx/vmlinux.uImage` propio (2.7 MB, Load 0x80000000, entry 0x803e3200, gcc 6.3.0 Codescape).
-  - Matriz de dispositivos TreeFrogUI (`docs/device-matrix.md`).
-  - `scripts/deploy-sd.sh` seguro con DRY-RUN/backup/rollback/registro test-runs.
-  - **DEPLOY FÍSICO REALIZADO (2026-09-09 19:34):** kernel nuestro en `G:\cubegm\vmlinux.uImage`
-    (sha `875854cb...`), dtb.bin idéntico al stock, backup completo en `G:\backups-treelinux\2026-09-09_1934_r36sx\`,
-    checksums verificados post-copia. avp.uImage/bootloader intactos. Registro: `docs/test-runs/2026-09-09_1934_r36sx.md`.
+- FASE D (R36SX): kernel stock analizado, DTB stock byte-identico, board profile,
+  deploy-sd.sh seguro, matriz dispositivos TreeFrogUI.
+- **FASE D COMPLETA — MILESTONE (test #9, 2026-09-10): PRIMER BOOT FÍSICO CON
+  KERNEL NUESTRO (k3 `795b9da4`, commit abc0595): TreeFrogUI bootea y NAVEGA con
+  botones. 24001+ frames de menú en log. Esquema: initramfs stock embebido (R30)
+  + joydev.**
+- Extractor reproducible del initramfs stock: `scripts/extract-stock-initramfs.sh`
+  (cpio 380 archivos sha deb48ce7).
+- Variante `ramfs` en build-kernel.sh (esquema real de la consola).
 
 ## In progress
 
-- **TEST #9 (2026-09-10 14:37): k3 = initramfs stock embebido + JOYDEV** sobre FAT
-  validada. ROOT CAUSE (R30) del logo eterno resuelto binariamente: el kernel stock
-  lleva un initramfs de 3.85 MB (380 archivos, init/linuxrc/bind-mounts) que k1/k2
-  NO tenían → kernel sin raíz → moría en init → 0 escrituras. El "boot" del test #1
-  era un log stale del stock (k1 NUNCA booteó; el único aporte del test #1 fue que
-  hcboot acepta nuestro formato uImage). k3 embeds el cpio stock byte-exacto
-  (`deb48ce7`) vía nueva variante `ramfs` de build-kernel.sh + fragment ramfs.
-  k3 sha `795b9da4...`, entry `0x803e4ee0`. Ver `docs/test-runs/2026-09-10_1437_r36sx.md`.
+- **TEST #10 (2026-09-10 15:02): k4 = k3 + CONFIG_CHECK_ADC (fix batería)** sobre
+  FAT validada. Root cause batería (R31): sin driver hc16xx-check-adc no existen
+  /dev/check_adc1/5 → driver.so stock lee 0% → "batería agotándose" + poweroff.
+  k4 sha `2dda38ab...`, entry `0x803e5780`, verificado con strings check_adc.
+  Esperado: menú navegable SIN aviso de batería. Ver
+  `docs/test-runs/2026-09-10_1502_r36sx.md`.
 
 ## Blocked
 
@@ -46,26 +44,27 @@ Actualizado: 2026-09-10 14:45 (R30 ROOT CAUSE: initramfs stock ausente en k1/k2;
 
 ## Next
 
-1. Usuario prueba test #9 (k3 en FAT validada): menú navegable = MILESTONE histórico
-   (primer kernel propio con boot completo). Reportar y reinsertar SD para forense.
-2. MILESTONE → FASE E bring-up + runtime K0 (dmesg, /proc/*) + FASE F (initramfs
-   TreeFrog propio → rootfs → FrogUI directo sin rkgame/zhijack).
-3. Fallo con escrituras nuevas → userland parcial: diagnóstico por logs.
-4. Fallo con 0 escrituras → serie virtual (frogshell realterm/tfusbhost) para ver
-   dónde muere k3 pre-userland; comparar entry/alloca vs stock.
-5. FASE G: caracterizar R36HD/SF3000/SF3500/GB350 (docs/device-matrix.md).
+1. Usuario prueba test #10 (k4): esperado menú navegable SIN aviso de batería.
+2. OK → FASE E formal: poweroff/reboot limpios, audio/AVP, USB, dmesg runtime
+   via zhijack; FASE F (initramfs TreeFrog propio → rootfs → FrogUI directo).
+3. Persiste aviso → calibración ADC: capturar dmesg + lecturas check_adc y comparar.
+4. FASE G: caracterizar R36HD/SF3000/SF3500/GB350 (docs/device-matrix.md).
 
 ## Last known bootable commit
 
-- **NINGUNO todavía** — ningún kernel nuestro ha booteado físicamente (corregido en
-  R30: el test #1 era log stale del stock; solo probó que hcboot acepta el formato).
-- k3 `795b9da4` (ramfs+joydev, initramfs stock embebido): test #9 en curso —
-  candidato de fidelidad máxima al stock.
-- Deploy actual en SD: k3 (test #9). Backups en la SD: k2 (1437) y stock (1317).
+- **abc0595** + build k3 `795b9da4...` (test #9, 2026-09-10): **PRIMER BOOT FÍSICO
+  CONFIRMADO con kernel nuestro** — TreeFrogUI bootea, navega con botones, 24001+
+  frames, sesión estable ~7 min (cortada por bug batería, no por el kernel).
+- Deploy actual en SD: k4 `2dda38ab...` (k3+CHECK_ADC, test #10 PENDIENTE).
+- Backups en SD: k3 (1502), k2 (1437), stock golden (1317).
 
 ## Last tested board
 
-- R36SX (stock bootea OK en tarjeta B reformateada = test #7; k3 en curso, test #9)
+- R36SX (boot k3 CONFIRMADO test #9; k4 en curso, test #10)
+
+## Last test result
+
+- **MILESTONE test #9:** boot completo + input OK; fallo residual batería (R31).
 
 ## Last test result
 
