@@ -70,3 +70,40 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
   - Manifest completo en out/hc16xx-db-a3100-v10/manifest.json (commit ff9ee22, sha256 de config/dts/dtb/vmlinux.bin).
   - Nota: config vendor trae `MIPS_NO_APPENDED_DTB` (hcboot pasa DTB). El append del SDK es conveniencia: objcopy --add-section si el ELF no tiene `.appended_dtb` (nuestro flujo), --update-section si la tiene. Resultado: vmlinux.bin 5804684 B.
 - Artifact SHA256 (manifest): vmlinux_bin `80833da6ad8072b7fd9772fd61e66a43585bd6931aab646d4d187face6f081ea`, dtb `bae8b4640e281fd51ec2e2128277ef2a441dcecac1a29185b9e65087f1e2ebc6`.
+
+## 2026-09-09 — FASE D (R36SX: caracterización stock + board profile + build propio)
+
+### R15. Kernel stock R36SX localizado y preservado
+- `lgpt-r36sx-port/physical-evidence/stock-kernel-golden/vmlinux.uImage.stock`
+- SHA256 `53b3e0b3d57fcdbef40d448ae2d3a00159bc84f2fd5be4c10a826827c7f2e01e` (== manifiesto PHYSICAL_GOLDEN del archivo en SD `cubegm/vmlinux.uImage`).
+- `dumpimage -l`: uImage legacy, "vmlinux", MIPS gzip, **Load 0x80000000, Entry 0x803337c0**, creado 2025-12-18.
+- Payload descomprimido (8709472 B): binario RAW (no ELF; primer código en 0x400). DTB NO embebido (sin FDT magic válido en el binario; IKCFG ausente). Confirma el flujo: hcboot carga `dtb.bin` aparte.
+- `strings`: **`Linux version 4.4.186-release (linsen.chen@hichip01) (gcc version 6.3.0 (Codescape GNU Tools 2018.09-02 for MIPS MTI Linux)) #7 PREEMPT Thu Dec 18 16:55:03 CST 2025`** → mismo baseline y MISMO TOOLCHAIN que nuestro build. Gap #4/9 parcialmente cerrado (vermagic conocido; .config exacto no extraíble — IKCFG no compilado).
+
+### R16. DTB stock R36SX localizado y analizado
+- `lgpt-r36sx-port/physical-evidence/PHYSICAL_GOLDEN_20260824/dtb.bin`, 33137 B,
+  SHA256 `1258f1eba809e43540c581b815c87815540a9e5897a4e8584363ab7de5cc27bb`.
+- `dtc -I dtb -O dts` → 1818 líneas. Datos clave (todos en docs/boards/r36sx.md):
+  - model "Hichip hc16xx", compatible "Hichip,1600", board label **`hc1600a@dbE3100v20`**
+  - memory reg `<0x0 0xaf91e50>`; fb0 buffer-phy-static `<0xaf91e50 0xe11000>`; sysmem `<0xbda2e50 0xb53600>`
+  - bootargs: `root=/dev/ram0 rootfstype=ramfs rw init=/linuxrc console=tty1 earlycon= no_console_suspend noirqdebug`
+  - fb0: 720x1280→scale 1920x1080 32bpp; fb1: 640x480 OSD
+  - key_adc3 activo con key-map (controles), resto disabled
+  - flash SPI particiones: boot 0x6c000 / eromfs 0x4000 @0x6c000 / persistentmem 0x10000 @0x70000
+  - nodo /hcrtos completo (bootmem/sysmem/mmz0/mmz1(kshm), scpu clock 7, strappin_avp)
+
+### R17. SD layout R36SX confirmado con manifiesto físico
+- PHYSICAL_GOLDEN_MANIFEST.txt: `cubegm/vmlinux.uImage` + `cubegm/avp.uImage` + `cubegm/dtb.bin` con tamaños y SHA256 exactos (ver docs/boards/r36sx.md). Gap #2 CERRADO para R36SX.
+- avp.uImage stock: 1381604 B, `a9788995...` — NO se toca (AGENTS.md §4.2).
+
+### R18. Board profile r36sx con verificación round-trip
+- `boards/r36sx/dts/r36sx-memmap.h`: defines derivados del DTB stock (evidenciados línea a línea).
+- `boards/r36sx/dts/r36sx.dts`: nuestra copia limpia (include memmap + stock decompilado). El DTS stock jamás se edita.
+- **Round-trip EXACTO:** gcc -E → dtc → `r36sx.dtb` (33137 B) `cmp` byte-a-byte == stock dtb.bin. Gap #1 CERRADO para R36SX.
+
+### R19. Build R36SX propio completado y comparado (§24)
+- `out/r36sx/vmlinux.uImage`: MIPS gzip uImage, Load 0x80000000, Entry 0x803e3200, 2700824 B.
+  - `Linux version 4.4.186-release (dafunknoise@DFNK) (gcc 6.3.0 Codescape 2018.09-02) #4 PREEMPT`
+- dtb.bin del build == stock (SHA256 `1258f1eb...` idéntico).
+- Diferencias conocidas vs stock: entry point (0x803e3200 vs 0x803337c0) y tamaño (2.7 MB vs 3.9 MB) — el .config del stock es más completo que el kernel-squashfs.config base del SDK (probables drivers extra WiFi/BT/otras pantallas). No bloquea la primera prueba: formato, load, toolchain, DTB y cmdline son equivalentes.
+- manifest.json con git_commit `81ecf9a`, hashes y avp_entry `0xabda4000` (derivado del DTS stock; el del stock corresponde a 0xabda3000+0x1000? — ver known-gaps).

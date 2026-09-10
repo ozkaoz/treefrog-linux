@@ -1,11 +1,19 @@
 #!/bin/bash
-# build-kernel.sh — compila vmlinux para una board de referencia del SDK
+# build-kernel.sh — compila vmlinux para una board
 # Replica: config de kernel del SDK + fixup CONFIG_PHYSICAL_START/PHYS_OFFSET/AVP_ENTRY
-# desde el DTS (update_physical_start.sh) + DTB + vmlinux gzip con DTB appended.
+# desde el DTS (update_physical_start.sh) + DTB + artefactos de consola.
 #
-# Uso: scripts/build-kernel.sh <dts-name> [config-variant]
-#   <dts-name>          nombre base del DTS en vendor/hichip/board (ej: hc16xx-db-a3100-v10)
-#   [config-variant]    squashfs (default) | initramfs | squashfs-jffs2 | squashfs-jffs2-tiny | squashfs-carlink
+# Uso: scripts/build-kernel.sh <board> [config-variant]
+#   <board>            boards/<board>/dts/<board>.dts (board real, ej: r36sx)
+#                     o DTS de devboard del SDK en vendor/hichip/board/common/dts (ej: hc16xx-db-a3100-v10)
+#   [config-variant]  squashfs (default) | initramfs | squashfs-jffs2 | squashfs-jffs2-tiny | squashfs-carlink
+#
+# Artefactos en out/<board>/:
+#   vmlinux          ELF completo
+#   vmlinux.bin      raw binary (objcopy -O binary)
+#   vmlinux.uImage   legacy uImage gzip, load 0x80000000, entry del ELF — formato stock consola
+#   dtb.bin          Device Tree Blob de la board
+#   manifest.json    commit + hashes + direcciones derivadas
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,12 +27,20 @@ TOOLCHAIN_BIN="${TFL_TOOLCHAIN_BIN:-$HOME/sf3000-work/sf3000toolchain/mipsel-bui
 CROSS_COMPILE="$TOOLCHAIN_BIN/mips-mti-linux-gnu-"
 ARCH=mips
 
-DTS_NAME="${1:?uso: build-kernel.sh <dts-name> [config-variant]}"
+DTS_NAME="${1:?uso: build-kernel.sh <board> [config-variant]}"
 CONFIG_VARIANT="${2:-squashfs}"
 BOARD_OUT="$OUT_BASE/$DTS_NAME"
 
-DTS_FILE=$(find "$VENDOR_BOARD/dts" -maxdepth 1 -name "$DTS_NAME.dts" | head -1)
-[ -n "$DTS_FILE" ] || { echo "ERROR: no encuentro $DTS_NAME.dts en $VENDOR_BOARD/dts"; exit 1; }
+# resolución del DTS: primero board real (boards/), luego devboard vendor
+if [ -f "$ROOT/boards/$DTS_NAME/dts/$DTS_NAME.dts" ]; then
+  DTS_FILE="$ROOT/boards/$DTS_NAME/dts/$DTS_NAME.dts"
+  BOARD_KIND="custom"
+elif [ -f "$VENDOR_BOARD/dts/$DTS_NAME.dts" ]; then
+  DTS_FILE="$VENDOR_BOARD/dts/$DTS_NAME.dts"
+  BOARD_KIND="vendor"
+else
+  echo "ERROR: no encuentro $DTS_NAME.dts ni en boards/$DTS_NAME/dts/ ni en $VENDOR_BOARD/dts"; exit 1
+fi
 KERNEL_CONFIG="$VENDOR_BOARD/kernel-configs/$KERNEL_VERSION/kernel-$CONFIG_VARIANT.config"
 [ -f "$KERNEL_CONFIG" ] || { echo "ERROR: no existe $KERNEL_CONFIG"; exit 1; }
 
@@ -77,31 +93,41 @@ echo "  avp entry:   $AVP_ENTRY"
 bash "$ROOT/vendor/hichip/sdk-glue/update_physical_start.sh" CONFIG_PHYSICAL_START "$TMPDIR_LA/a.out" "$KERNEL_DIR/.config" "$KERNEL_DIR/arch/mips/include/asm/mach-hc16xx/spaces.h" "$KERNEL_DIR/arch/mips/include/asm/mach-hc16xx/kernel-entry-init.h"
 grep CONFIG_PHYSICAL_START "$KERNEL_DIR/.config"
 
-echo "== compilando DTB (regla %.dtb del kernel 4.4; DTS en arch/mips/boot/dts plano, como el SDK) =="
+echo "== compilando DTB =="
 DTS_SRC_DIR="arch/mips/boot/dts"
 mkdir -p "$DTS_SRC_DIR"
-cp "$VENDOR_BOARD/dts/"*.dts "$DTS_SRC_DIR/" 2>/dev/null || true
-cp "$VENDOR_BOARD/dts/"*.dtsi "$DTS_SRC_DIR/" 2>/dev/null || true
-make ARCH=$ARCH CROSS_COMPILE="$CROSS_COMPILE" HOSTCFLAGS="-O2 -fcommon -std=gnu89" "$DTS_NAME.dtb" 2>&1 | tail -3
-DTB_PATH="$DTS_SRC_DIR/$DTS_NAME.dtb"
-[ -f "$DTB_PATH" ] || { echo "ERROR: DTB no generado"; exit 1; }
+if [ "$BOARD_KIND" = "custom" ]; then
+  # board real: DTS con includes vendor-style -> preprocesar con gcc -E (como el SDK/hcboot)
+  # y compilar dtc directamente (round-trip verificado en boards/<board>/)
+  INCS="-I$(dirname "$DTS_FILE") -I$KERNEL_DIR/include -I$KERNEL_DIR/arch/mips/boot/dts/include"
+  gcc -E -nostdinc -undef -D__DTS__ -x assembler-with-cpp $INCS -o "$BOARD_OUT/$DTS_NAME.pp.dts" "$DTS_FILE"
+  dtc -q -I dts -O dtb -o "$BOARD_OUT/dtb.bin" "$BOARD_OUT/$DTS_NAME.pp.dts"
+  # DTB de board custom NO se copia al arbol del kernel (el kernel no lo necesita in-tree:
+  # el config usa MIPS_NO_APPENDED_DTB y hcboot carga dtb.bin aparte)
+else
+  cp "$VENDOR_BOARD/dts/"*.dts "$DTS_SRC_DIR/" 2>/dev/null || true
+  cp "$VENDOR_BOARD/dts/"*.dtsi "$DTS_SRC_DIR/" 2>/dev/null || true
+  make ARCH=$ARCH CROSS_COMPILE="$CROSS_COMPILE" HOSTCFLAGS="-O2 -fcommon -std=gnu89" "$DTS_NAME.dtb" 2>&1 | tail -3
+  install -m 0644 "$DTS_SRC_DIR/$DTS_NAME.dtb" "$BOARD_OUT/dtb.bin"
+fi
+[ -f "$BOARD_OUT/dtb.bin" ] || { echo "ERROR: DTB no generado"; exit 1; }
+DTB_PATH="$BOARD_OUT/dtb.bin"
 
 echo "== compilando vmlinux =="
 make ARCH=$ARCH CROSS_COMPILE="$CROSS_COMPILE" -j"$(nproc)" vmlinux 2>&1 | tail -5
 
-echo "== empaquetando vmlinux.bin (gzip + DTB appended, linux-ext-elf-append-dtb.mk) =="
+echo "== empaquetando artefactos de consola =="
 cp vmlinux "$BOARD_OUT/vmlinux"
-# el config vendor usa MIPS_NO_APPENDED_DTB (hcboot pasa el DTB); el mk del SDK appendea
-# la seccion como conveniencia -> usamos add-section si el ELF no la tiene, update si existe
-if "$TOOLCHAIN_BIN/mips-mti-linux-gnu-readelf" -S vmlinux | grep -q '\.appended_dtb'; then
-  "$TOOLCHAIN_BIN/mips-mti-linux-gnu-objcopy" --update-section .appended_dtb="$DTB_PATH" vmlinux
-else
-  "$TOOLCHAIN_BIN/mips-mti-linux-gnu-objcopy" --add-section .appended_dtb="$DTB_PATH" vmlinux
-fi
-gzip -9 -c vmlinux > "$BOARD_OUT/vmlinux.gz"
+# 1) vmlinux.bin: raw binary (formato del SDK)
 "$TOOLCHAIN_BIN/mips-mti-linux-gnu-objcopy" -O binary vmlinux "$BOARD_OUT/vmlinux.bin"
-install -m 0644 "$DTB_PATH" "$BOARD_OUT/dtb.bin"
-# restaurar vmlinux sin dtb para no ensuciar el árbol
+# 2) vmlinux.uImage: legacy uImage gzip — EXACTO al formato stock de las consolas:
+#    payload = vmlinux.bin gzipeado (SIN DTB: hcboot carga dtb.bin aparte; evidencia
+#    del stock: payload descomprimido = binario raw, IKCFG ausente, DTB separado en SD)
+gzip -9 -c "$BOARD_OUT/vmlinux.bin" > "$BOARD_OUT/vmlinux.bin.gz"
+ENTRY_ADDR=$("$TOOLCHAIN_BIN/mips-mti-linux-gnu-readelf" -h vmlinux | awk '/Entry point address/{print $4}')
+mkimage -A mips -O linux -T kernel -C gzip -a 0x80000000 -e "$ENTRY_ADDR" \
+  -n "vmlinux" -d "$BOARD_OUT/vmlinux.bin.gz" "$BOARD_OUT/vmlinux.uImage"
+# restaurar (por si el árbol se ensucia con .appended_dtb del modo vendor)
 git checkout -- vmlinux 2>/dev/null || true
 
 echo "== manifest =="
@@ -121,9 +147,12 @@ GCC_VER=$("$TOOLCHAIN_BIN/mips-mti-linux-gnu-gcc" -dumpversion | head -1)
   echo "  \"dts_sha256\": \"$(sha256sum "$DTS_FILE" | awk '{print $1}')\","
   echo "  \"dtb_sha256\": \"$(sha256sum "$BOARD_OUT/dtb.bin" | awk '{print $1}')\","
   echo "  \"vmlinux_bin_sha256\": \"$(sha256sum "$BOARD_OUT/vmlinux.bin" | awk '{print $1}')\","
+  echo "  \"vmlinux_uimage_sha256\": \"$(sha256sum "$BOARD_OUT/vmlinux.uImage" | awk '{print $1}')\","
+  echo "  \"uimage_entry\": \"$ENTRY_ADDR\","
   echo "  \"built_at\": \"$(date -Iseconds)\""
   echo "}"
 } > "$BOARD_OUT/manifest.json"
+echo "--- manifest ---"
 cat "$BOARD_OUT/manifest.json"
 
 echo "== done: $BOARD_OUT =="
