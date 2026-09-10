@@ -1,6 +1,6 @@
 # Status — treefrog-linux
 
-Actualizado: 2026-09-10 16:20 (R34: k5/k6 morían pre-picoarch sin traza; k7 = forense por pasos)
+Actualizado: 2026-09-10 16:32 (R35 ROOT CAUSE: kernel ejecuta /init, no /linuxrc; k8 desplegado)
 
 ## Working
 
@@ -22,13 +22,14 @@ Actualizado: 2026-09-10 16:20 (R34: k5/k6 morían pre-picoarch sin traza; k7 = f
 
 ## In progress
 
-- **FASE F — TEST #13 (16:18): k7 = linuxrc v3 forense por pasos.** R34 corrigió
-  el diagnóstico: ni k5 ni k6 lanzaron picoarch jamás (los logs que crecieron
-  eran de la sesión k4); nuestro init muere pre-loop sin traza. k7 traza
-  P01-P13 a /mnt/sdcard/tf-trace.txt con sync por paso; SD montada manual
-  (sin mdev); añade devpts/shm/run y binds completos de rootfs como el stock.
-  La próxima lectura de tf-trace.txt = punto exacto de muerte.
-  Ver `docs/test-runs/2026-09-10_1618_r36sx.md`.
+- **FASE F — TEST #14 (16:30): k8 = /init propio.** R35 cerró el rompecabezas
+  #11-#13: con initramfs el kernel ejecuta /init (init/main.c:1023); si no
+  existe va a prepare_namespace() y el init= de bootargs NUNCA se evalúa →
+  pánico silencioso. Nuestro build borraba /init (heredado del stock) y solo
+  ponía /linuxrc → el kernel nunca ejecutó nuestros scripts. k8: linuxrc v3
+  instalado COMO /init (verificado en cpio embebido). Si boota = FASE F
+  completa (kernel+init propios); si falla, tf-trace.txt da el paso exacto.
+  Ver `docs/test-runs/2026-09-10_1630_r36sx.md`.
 
 ## Blocked
 

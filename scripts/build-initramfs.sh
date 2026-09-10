@@ -38,9 +38,14 @@ rm -rf "$OUT_DIR"; mkdir -p "$OUT_DIR"
 (cd "$OUT_DIR" && cpio -idm --no-absolute-filenames < "$STOCK_CPIO" >/dev/null 2>&1) || true
 
 echo "== 2. limpiar lo que NO usamos (S-scripts stock, inittab stock) =="
-rm -rf "$OUT_DIR/etc/init.d" "$OUT_DIR/etc/inittab" "$OUT_DIR/init" "$OUT_DIR/linuxrc"
+# NOTA (R35): el kernel 4.4 con initramfs ejecuta /init PRIMERO (init/main.c:1023-1027:
+# ramdisk_execute_command="/init"; si no existe -> NULL -> prepare_namespace() y el
+# init= de bootargs NO se evalúa en ese path -> pánico silencioso sin /init).
+# El stock lleva /init (script exec /sbin/init). Nuestro flujo: /init = linuxrc propio.
+rm -rf "$OUT_DIR/etc/init.d" "$OUT_DIR/etc/inittab" "$OUT_DIR/linuxrc" "$OUT_DIR/init"
 
-echo "== 3. instalar linuxrc TreeFrog propio =="
+echo "== 3. instalar linuxrc TreeFrog propio como /init (y /linuxrc alias) =="
+install -m 0755 "$LINUXRC" "$OUT_DIR/init"
 install -m 0755 "$LINUXRC" "$OUT_DIR/linuxrc"
 
 echo "== 4. conservar del stock: busybox + symlinks, lib/, hcdaemon, hotplug_helper =="

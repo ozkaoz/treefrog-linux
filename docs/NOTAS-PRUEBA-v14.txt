@@ -1,0 +1,25 @@
+treefrog-linux TEST #14 (2026-09-10 16:30) — k8: /init = nuestro linuxrc v3
+==============================================================================
+ROOT CAUSE FINAL DE LOS TESTS #11-#13 (R35):
+  El kernel Linux 4.4 con initramfs ejecuta /init PRIMERO (código verificado:
+  init/main.c:1023: ramdisk_execute_command = "/init"; si NO EXISTE -> NULL ->
+  prepare_namespace() -> intenta rootfs REAL -> init= de bootargs JAMÁS se
+  evalúa en ese path -> pánico silencioso). El stock lleva /init (script que
+  exec /sbin/init); nuestro build lo BORRABA y solo ponía /linuxrc -> el kernel
+  NUNCA ejecutó ninguno de nuestros linuxrc v1/v2/v3 (k5/k6/k7 murieron igual).
+  Por eso: sin traza, sin logs, sin picoarch — y la pantalla mostraba el logo
+  del AVP eternamente.
+
+FIX: build-initramfs.sh ahora instala nuestro linuxrc v3 COMO /init (+ /linuxrc
+  alias). VERIFICADO en el cpio embebido del k8: /init = script v3 (P01-P13).
+
+Kernel:  k8 = vmlinux.uImage sha 9ded9df9... entry 0x803e5780 (kernel idéntico
+        al golden k4; solo cambia el init del ramdisk — ahora SÍ ejecutable
+        como /init).
+
+RESULTADO ESPERADO: menú TreeFrogUI navegable por NUESTRO init completo.
+  /mnt/g/tf-trace.txt con P01...P13 + "=== LOOP frogui" + iter frames.
+  (si algo aún falla, la traza dirá el paso exacto — el mecanismo v3 queda)
+
+BACKUPS EN SD: k7 (1630), k6 (1618), k5 (1602), k4 golden (1502), stock (1317).
+TRAS LA PRUEBA: reinsertar SD → leo tf-trace.txt.

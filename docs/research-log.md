@@ -345,3 +345,23 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
   solo lib/usr). Cap 5 muertes en el loop para no quemar la SD.
 - La próxima lectura de tf-trace.txt (o su ausencia) determina el paso exacto
   de muerte sin ambigüedad.
+
+### R35. ROOT CAUSE FINAL tests #11-#13: el kernel ejecuta /init, NO /linuxrc (2026-09-10 16:30)
+- Test #13 (k7): mismo síntoma, tf-trace.txt AUSENTE → muerte pre-P06 sin
+  traza posible. Tres linuxrc muriendo sin escribir NADA = el supuesto base
+  era falso: el kernel NUNCA ejecutó ninguno de nuestros scripts.
+- Verificación contra el CÓDIGO (downloads/linux-4.4.186/init/main.c):
+  - L1023-1027: con initramfs, `ramdisk_execute_command = "/init"`;
+    si /init NO existe → NULL → prepare_namespace() monta rootfs REAL (root=)
+    y el `init=` de bootargs NO se evalúa en ese path → panic silencioso.
+  - L948-953: run_init_process(ramdisk_execute_command) es lo PRIMERO.
+- El initramfs STOCK lleva /init (script devtmpfs + exec /sbin/init, extraído
+  en R30). Nuestro build-initramfs.sh hacía `rm init` y solo instalaba
+  /linuxrc → kernel sin init en ramdisk → k5/k6/k7 murieron IDÉNTICOS:
+  logo AVP eterno, 0 escrituras, sin picoarch (consistente con TODOS los
+  forenses previos; reinterpreta R33/R34: nunca hubo muerte de picoarch
+  ni OOM con init propio — todo era kernel-sin-init).
+- Fix: build-initramfs.sh instala el linuxrc v3 COMO /init + alias /linuxrc.
+  Verificado en el cpio embebido del k8: /init 6425 B = script v3 (P01-P13).
+- k8 `9ded9df9` (entry 0x803e5780, kernel idéntico golden k4, cpio 2e48fb67,
+  372 entradas). Deploy 16:30 = test #14.
