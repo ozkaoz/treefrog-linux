@@ -217,3 +217,22 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
   Boot OK → medio validado → test #8 = k2 `fe16c9c4` (joydev) decisivo.
   Fallo → tarjeta incompatible → recuperar tarjeta A original (SD stock 2026-08-24)
   o tercera tarjeta.
+
+### R29. Test #7 BOOT OK — medio validado; baseline stock K0; deploy test #8 (13:17)
+- Test #7: 100% stock (`53b3e0b3`) + TreeFrogUI v1.0.15 sobre tarjeta B REFORMATEADA
+  = **BOOT OK, TreeFrogUI funciona correctamente** (reporte usuario). Conclusión:
+  la FAT nueva es sane Y escribible por Linux (logs del boot stock escritos en SD).
+  El culpable de tests #2–#6 era la FAT VIEJA de la tarjeta B (corrupta en la zona
+  del kernel o geometría previa), no los kernels k1/k2 ni la tarjeta en sí.
+- Baseline runtime stock sobre esta FAT capturado (antes del siguiente boot):
+  `log-2026-09-10_stock-fatk2.txt` (sha ad0ff432...) — procesos: picoarch pid 573,
+  /proc/fb `0 hcfb`/`1 hcfb`, fb0 720x1280 bpp32 smem_start=0xaf92000 line=2880,
+  hwdisp driver_r36sx.so setmode ret=17, audio 44100→48000, panel 640x480
+  ui_scale=150; `tfhijack-2026-09-10_stock-fat.txt` (set_environment→init→load_game→
+  fork zhijack, 1 ciclo).
+- **Test #8 desplegado (13:17):** k2 `fe16c9c4` (joydev) sobre esta FAT validada,
+  via deploy-sd.sh --apply. Backup del stock golden en la propia SD
+  (`backups-treelinux/2026-09-10_1317_r36sx/`: kernel 53b3e0b3 + dtb + avp).
+  Checksums verificados post-copia. Éxito = MILESTONE (kernel nuestro + input).
+  Fallo = siguiente paso consola serie virtual (frogshell realterm tfusbhost,
+  backups LPTRACKER sd-prfix-20260910) — medio y k1 ya exculpados.

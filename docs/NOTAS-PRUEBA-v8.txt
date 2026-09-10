@@ -1,0 +1,31 @@
+treefrog-linux TEST #8 (2026-09-10 13:17) — DECISIVO: kernel k2 JOYDEV sobre FAT validada
+==============================================================================
+Medio:    tarjeta B reformateada + TreeFrogUI v1.0.15 — VALIDADO en test #7
+          (boot stock perfecto + logs escritos por Linux = FAT sane/writable).
+
+Kernel:  NUESTRO k2 = vmlinux.uImage sha fe16c9c4... (Linux 4.4.186 +
+         41 patches Hichip + hcdrivers + CONFIG_INPUT_JOYDEV=y)
+         commit ac04c73, entry 0x803e4930, Codescape GCC 6.3.0,
+         DTB byte-identico al stock. Diferencia vs k1 (que ya booto en test #1):
+         SOLO joydev (verificado con diff de configs efectivos = 1 linea).
+AVP:     stock a9788995 — NO tocado
+DTB:     stock 1258f1eb — NO tocado (identico)
+Sistema: TreeFrogUI v1.0.15 completo (sin cambios)
+
+ESTE ES EL TEST DECISIVO DEL PROYECTO:
+  Si boota con botones funcionales = MILESTONE:
+  kernel nuestro compilado por nosotros + input funcional = base TreeFrog Linux lograda.
+
+RESULTADO ESPERADO: logo -> ~30-60s -> menu TreeFrogUI NAVEGABLE CON BOTONES.
+  (joydev crea /dev/input/js0 -> cubevol lo lee -> /tmp/joy_key -> picoarch/FrogUI)
+
+SI FALLA (logo quieto): ya tenemos la consola serie virtual como siguiente paso
+  (zhijack + frogshell realterm) para ver exactamente donde muere el kernel k2,
+  porque el medio y k1 estan exculpados por los tests #7/#1.
+
+BACKUP STOCK EN ESTA SD: /backups-treelinux/2026-09-10_1317_r36sx/
+  (vmlinux.uImage 53b3e0b3 stock golden + dtb + avp)
+ROLLBACK: copiar ese backup a /cubegm/ y listo.
+
+TRAS LA PRUEBA (reinsertar SD en PC): reviso log.txt — si hay boot con k2,
+  el log mostrara /dev/input/js* activo y navegacion (cambio de core frogui->X).

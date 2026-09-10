@@ -1,6 +1,6 @@
 # Status — treefrog-linux
 
-Actualizado: 2026-09-10 13:15 (test #6: medio culpable; test #7 stock sobre FAT nueva)
+Actualizado: 2026-09-10 13:25 (test #7 BOOT OK → medio validado; test #8 decisivo desplegado)
 
 ## Working
 
@@ -22,15 +22,13 @@ Actualizado: 2026-09-10 13:15 (test #6: medio culpable; test #7 stock sobre FAT 
 
 ## In progress
 
-- **TEST #7 (2026-09-10 13:10): STOCK + TreeFrogUI v1.0.15 sobre tarjeta B reformateada.**
-  Test #6 cerró la bisección: k1 (boot probado en test #1) TAMBIÉN congela en la
-  tarjeta B → kernels k1/k2 exculpados; culpable = el MEDIO. El usuario reformateó la
-  tarjeta B e instaló TreeFrogUI v1.0.15 limpio — la instalación trajo la triada
-  STOCK completa (verificada por hashes: kernel `53b3e0b3`, avp `a9788995`,
-  dtb `1258f1eb`). Este estado ES el test #7: 100% stock sobre la FAT nueva.
-  Boot OK → tarjeta validada → test #8 = k2 (joydev) decisivo.
-  Fallo → tarjeta B incompatible → recuperar tarjeta A o tercera tarjeta.
-  Ver `docs/test-runs/2026-09-10_1310_r36sx-stockfat.md`.
+- **TEST #8 (2026-09-10 13:17): DECISIVO — k2 JOYDEV `fe16c9c4` sobre FAT validada.**
+  Test #7 BOOT OK (100% stock + TreeFrogUI v1.0.15 en tarjeta B reformateada) →
+  medio validado; baseline runtime stock capturado
+  (`docs/test-runs/log-2026-09-10_stock-fatk2.txt`). Deploy de k2 vía deploy-sd.sh
+  con backup del stock golden en `backups-treelinux/2026-09-10_1317_r36sx/` de la SD.
+  Éxito = MILESTONE del proyecto (kernel nuestro + input funcional). Ver
+  `docs/test-runs/2026-09-10_1317_r36sx.md`.
 
 ## Blocked
 
@@ -47,14 +45,13 @@ Actualizado: 2026-09-10 13:15 (test #6: medio culpable; test #7 stock sobre FAT 
 
 ## Next
 
-1. Usuario prueba test #7 (STOCK sobre FAT nueva): menú navegable = tarjeta validada.
-2. Boot OK → **test #8 decisivo**: deploy k2 `fe16c9c4` (joydev) sobre esta FAT con
-   deploy-sd.sh → si boota = MILESTONE (boot completo + input propio).
-3. Fallo test #7 → tarjeta B incompatible a nivel hardware → recuperar tarjeta A
-   original del test #1 (SD stock 2026-08-24, paradero por confirmar) o tercera tarjeta.
-4. Con boot estable de k2: FASE E bring-up + runtime K0 (dmesg, /proc/*) + FASE F
-   (initramfs propio → rootfs TreeFrog → FrogUI directo).
-5. FASE G: caracterizar R36HD/SF3000/SF3500/GB350 (backups stock identificados en docs/device-matrix.md).
+1. Usuario prueba test #8 (k2 joydev en FAT validada): menú navegable = MILESTONE.
+2. MILESTONE → FASE E bring-up (audio/AVP, poweroff, USB por subsistemas) + runtime
+   K0 completo (dmesg, /proc/*) vía zhijack/frogshell; luego FASE F (initramfs propio
+   BusyBox → rootfs TreeFrog → FrogUI directo sin rkgame/zhijack).
+3. Fallo test #8 → consola serie virtual (zhijack + frogshell realterm,
+   `D:\R36S\PORT LPTRACKER\BACKUPS\sd-prfix-20260910`) para ver dónde muere k2.
+4. FASE G: caracterizar R36HD/SF3000/SF3500/GB350 (backups stock identificados en docs/device-matrix.md).
 
 ## Last known bootable commit
 
