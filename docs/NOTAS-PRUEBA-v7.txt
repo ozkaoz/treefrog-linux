@@ -1,0 +1,28 @@
+treefrog-linux TEST #7 (2026-09-10) — VALIDACIÓN TARJETA B: kernel STOCK + TreeFrogUI v1.0.15
+=====================================================================================
+Estado SD: tarjeta B (60GB) REFORMATEADA hoy + TreeFrogUI v1.0.15 instalación limpia.
+
+Kernel:  STOCK golden 53b3e0b3 (vmlinux.uImage, entry 0x803337c0, 3.9 MB)
+AVP:     STOCK a9788995 — el que siempre funcionó
+DTB:     STOCK 1258f1eb — byte-idéntico al de siempre
+Sistema: TreeFrogUI v1.0.15 oficial (4675 archivos)
+
+ESTE TEST NO PRUEBA NINGÚN KERNEL NUESTRO.
+Su único propósito: validar que la tarjeta B reformateada arranca la consola CON TODO STOCK.
+Es la celda que faltaba en la matriz:
+
+  Test #1: k1 nuestro  + tarjeta A original  = BOOT OK
+  Test #6: k1 nuestro  + tarjeta B vieja FAT = congela (0 escrituras)
+  Test #7: STOCK       + tarjeta B NUEVA FAT = ???  <— ESTE TEST
+
+RESULTADO ESPERADO (boot normal): logo → menú TreeFrogUI v1.0.15 navegable.
+  → La tarjeta B queda VALIDADA → despliego k2 (joydev) = test #8 = el test decisivo.
+
+RESULTADO FALLO (logo quieto / "Please insert TF card"):
+  → La tarjeta B (60GB) es INCOMPATIBLE con hcboot a nivel de hardware/geometría.
+  → Recuperar la tarjeta A original del test #1 (SD stock 2026-08-24) o usar OTRA tarjeta.
+
+TRAS LA PRUEBA (reinsertar SD en PC): capturo log.txt / tfhijack.log / picoarch_init.log
+  = baseline de boot stock sobre esta FAT + evidencia runtime K0 (procesos, /proc/fb, CPU).
+
+ROLLBACK: no aplica — todo stock, nada sustituido.

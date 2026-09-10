@@ -202,3 +202,18 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
 - Comandos clave: `sha256sum` logs SD vs backup; `python3` FDT-scan (magic d00dfeed:
   NO está en los uImages — el DTB viaja aparte, coherente con MIPS_NO_APPENDED_DTB);
   `gunzip -c` payload; `diff` configs efectivos; `dumpimage -l`.
+
+### R28. Test #6 resultado + test #7 (validación del medio tras formateo)
+- Test #6: k1 `875854cb` (boot probado en test #1) sobre tarjeta B = **logo quieto,
+  sin boot** → k1 falla SOLO en tarjeta B → **el MEDIO es el culpable** de los tests
+  #2–#6; los kernels k1/k2 quedan exculpados (delta k1-k2 = joydev únicamente, ver R27).
+- Usuario reformateó la tarjeta B (60 GB) e instaló TreeFrogUI v1.0.15 limpio (13:04).
+  Verificación post-formato (WSL): triada de boot **STOCK completa** por hashes —
+  vmlinux.uImage `53b3e0b3` (golden, entry 0x803337c0), avp.uImage `a9788995`,
+  dtb.bin `1258f1eb`; 4675 archivos, 1.2 GB; FAT32 (stat -f: bloque 32768);
+  `System Volume Information` 13:04 = FAT fresca.
+- Test #7 = este estado mismo: 100% stock sobre FAT nueva. Celda que faltaba:
+  separa "geometría FAT reformateable" de "incompatibilidad de la tarjeta 60 GB".
+  Boot OK → medio validado → test #8 = k2 `fe16c9c4` (joydev) decisivo.
+  Fallo → tarjeta incompatible → recuperar tarjeta A original (SD stock 2026-08-24)
+  o tercera tarjeta.
