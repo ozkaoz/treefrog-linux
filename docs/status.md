@@ -1,6 +1,6 @@
 # Status — treefrog-linux
 
-Actualizado: 2026-09-10 13:25 (test #7 BOOT OK → medio validado; test #8 decisivo desplegado)
+Actualizado: 2026-09-10 14:45 (R30 ROOT CAUSE: initramfs stock ausente en k1/k2; k3 desplegado)
 
 ## Working
 
@@ -22,13 +22,14 @@ Actualizado: 2026-09-10 13:25 (test #7 BOOT OK → medio validado; test #8 decis
 
 ## In progress
 
-- **TEST #8 (2026-09-10 13:17): DECISIVO — k2 JOYDEV `fe16c9c4` sobre FAT validada.**
-  Test #7 BOOT OK (100% stock + TreeFrogUI v1.0.15 en tarjeta B reformateada) →
-  medio validado; baseline runtime stock capturado
-  (`docs/test-runs/log-2026-09-10_stock-fatk2.txt`). Deploy de k2 vía deploy-sd.sh
-  con backup del stock golden en `backups-treelinux/2026-09-10_1317_r36sx/` de la SD.
-  Éxito = MILESTONE del proyecto (kernel nuestro + input funcional). Ver
-  `docs/test-runs/2026-09-10_1317_r36sx.md`.
+- **TEST #9 (2026-09-10 14:37): k3 = initramfs stock embebido + JOYDEV** sobre FAT
+  validada. ROOT CAUSE (R30) del logo eterno resuelto binariamente: el kernel stock
+  lleva un initramfs de 3.85 MB (380 archivos, init/linuxrc/bind-mounts) que k1/k2
+  NO tenían → kernel sin raíz → moría en init → 0 escrituras. El "boot" del test #1
+  era un log stale del stock (k1 NUNCA booteó; el único aporte del test #1 fue que
+  hcboot acepta nuestro formato uImage). k3 embeds el cpio stock byte-exacto
+  (`deb48ce7`) vía nueva variante `ramfs` de build-kernel.sh + fragment ramfs.
+  k3 sha `795b9da4...`, entry `0x803e4ee0`. Ver `docs/test-runs/2026-09-10_1437_r36sx.md`.
 
 ## Blocked
 
@@ -45,26 +46,26 @@ Actualizado: 2026-09-10 13:25 (test #7 BOOT OK → medio validado; test #8 decis
 
 ## Next
 
-1. Usuario prueba test #8 (k2 joydev en FAT validada): menú navegable = MILESTONE.
-2. MILESTONE → FASE E bring-up (audio/AVP, poweroff, USB por subsistemas) + runtime
-   K0 completo (dmesg, /proc/*) vía zhijack/frogshell; luego FASE F (initramfs propio
-   BusyBox → rootfs TreeFrog → FrogUI directo sin rkgame/zhijack).
-3. Fallo test #8 → consola serie virtual (zhijack + frogshell realterm,
-   `D:\R36S\PORT LPTRACKER\BACKUPS\sd-prfix-20260910`) para ver dónde muere k2.
-4. FASE G: caracterizar R36HD/SF3000/SF3500/GB350 (backups stock identificados en docs/device-matrix.md).
+1. Usuario prueba test #9 (k3 en FAT validada): menú navegable = MILESTONE histórico
+   (primer kernel propio con boot completo). Reportar y reinsertar SD para forense.
+2. MILESTONE → FASE E bring-up + runtime K0 (dmesg, /proc/*) + FASE F (initramfs
+   TreeFrog propio → rootfs → FrogUI directo sin rkgame/zhijack).
+3. Fallo con escrituras nuevas → userland parcial: diagnóstico por logs.
+4. Fallo con 0 escrituras → serie virtual (frogshell realterm/tfusbhost) para ver
+   dónde muere k3 pre-userland; comparar entry/alloca vs stock.
+5. FASE G: caracterizar R36HD/SF3000/SF3500/GB350 (docs/device-matrix.md).
 
 ## Last known bootable commit
 
-- **81ecf9a** + build k1 `875854cb...` (kernel #1 — ÚNICO boot físico confirmado con
-  kernel nuestro, test #1 tarjeta A: sistema completo arriba, menú renderizado, input
-  muerto sin joydev).
-- k2 `fe16c9c4` (joydev): tests #2/#5 = congela en tarjeta B vieja (0 escrituras);
-  k1 = congela en tarjeta B vieja (test #6) → medio culpable, kernels exculpados.
-- Test #7 en curso: 100% STOCK sobre tarjeta B reformateada (validación del medio).
+- **NINGUNO todavía** — ningún kernel nuestro ha booteado físicamente (corregido en
+  R30: el test #1 era log stale del stock; solo probó que hcboot acepta el formato).
+- k3 `795b9da4` (ramfs+joydev, initramfs stock embebido): test #9 en curso —
+  candidato de fidelidad máxima al stock.
+- Deploy actual en SD: k3 (test #9). Backups en la SD: k2 (1437) y stock (1317).
 
 ## Last tested board
 
-- R36SX (boot k1 confirmado test #1/tarjeta A; test #7 en curso: stock/tarjeta B nueva)
+- R36SX (stock bootea OK en tarjeta B reformateada = test #7; k3 en curso, test #9)
 
 ## Last test result
 

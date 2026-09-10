@@ -6,7 +6,10 @@
 # Uso: scripts/build-kernel.sh <board> [config-variant]
 #   <board>            boards/<board>/dts/<board>.dts (board real, ej: r36sx)
 #                     o DTS de devboard del SDK en vendor/hichip/board/common/dts (ej: hc16xx-db-a3100-v10)
-#   [config-variant]  squashfs (default) | initramfs | squashfs-jffs2 | squashfs-jffs2-tiny | squashfs-carlink
+#   [config-variant]  squashfs (default) | initramfs | ramfs | kernelonly
+#                     ramfs = initramfs stock embebido (esquema real de la consola,
+#                     R30): usa boards/<board>/config/<board>-ramfs.fragment.config
+#                     y requiere build/stock-initramfs.cpio (extract-stock-initramfs.sh)
 #
 # Artefactos en out/<board>/:
 #   vmlinux          ELF completo
@@ -46,14 +49,27 @@ fi
 KERNEL_ONLY=0
 BASE_VARIANT="$CONFIG_VARIANT"
 FRAGMENT=""
-if [ "$CONFIG_VARIANT" = "kernelonly" ]; then
-  KERNEL_ONLY=1
-  BASE_VARIANT="squashfs"
-  FRAGMENT="$ROOT/boards/$DTS_NAME/config/$DTS_NAME-kernelonly.fragment.config"
-  [ -f "$FRAGMENT" ] || { echo "ERROR: falta $FRAGMENT"; exit 1; }
-elif [ -f "$ROOT/boards/$DTS_NAME/config/$DTS_NAME.fragment.config" ]; then
-  FRAGMENT="$ROOT/boards/$DTS_NAME/config/$DTS_NAME.fragment.config"
-fi
+STOCK_INITRAMFS="$ROOT/build/stock-initramfs.cpio"
+case "$CONFIG_VARIANT" in
+  kernelonly)
+    KERNEL_ONLY=1
+    BASE_VARIANT="squashfs"
+    FRAGMENT="$ROOT/boards/$DTS_NAME/config/$DTS_NAME-kernelonly.fragment.config"
+    [ -f "$FRAGMENT" ] || { echo "ERROR: falta $FRAGMENT"; exit 1; }
+    ;;
+  ramfs)
+    # esquema REAL de la consola (R30): initramfs stock embebido en el kernel
+    BASE_VARIANT="squashfs"
+    FRAGMENT="$ROOT/boards/$DTS_NAME/config/$DTS_NAME-ramfs.fragment.config"
+    [ -f "$FRAGMENT" ] || { echo "ERROR: falta $FRAGMENT"; exit 1; }
+    [ -f "$STOCK_INITRAMFS" ] || { echo "ERROR: falta $STOCK_INITRAMFS — ejecuta scripts/extract-stock-initramfs.sh"; exit 1; }
+    ;;
+  *)
+    if [ -f "$ROOT/boards/$DTS_NAME/config/$DTS_NAME.fragment.config" ]; then
+      FRAGMENT="$ROOT/boards/$DTS_NAME/config/$DTS_NAME.fragment.config"
+    fi
+    ;;
+esac
 KERNEL_CONFIG="$VENDOR_BOARD/kernel-configs/$KERNEL_VERSION/kernel-$BASE_VARIANT.config"
 [ -f "$KERNEL_CONFIG" ] || { echo "ERROR: no existe $KERNEL_CONFIG"; exit 1; }
 INITRAMFS_CPIO="$ROOT/build/initramfs-$DTS_NAME/tf-initramfs.cpio.gz"

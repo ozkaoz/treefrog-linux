@@ -1,0 +1,32 @@
+treefrog-linux TEST #9 (2026-09-10 14:37) — k3: initramfs stock embebido + JOYDEV
+=============================================================================
+ROOT CAUSE ENCONTRADO (R30): el kernel STOCK lleva un initramfs de 3.85 MB
+embebido (380 archivos: init -> /sbin/init, linuxrc -> busybox, bind-mounts del
+rootfs en SD). k1/k2 lo carecían -> kernel sin raíz -> moría en init -> CERO
+escrituras en SD -> logo eterno. Los "boots" que parecían de k1 eran logs stale.
+
+Kernel:  NUESTRO k3 = vmlinux.uImage sha 795b9da4... (4.35 MB)
+        Linux 4.4.186 + 41 patches Hichip + hcdrivers + JOYDEV
+        + INITRAMFS STOCK EXTRAÍDO DEL GOLDEN (byte-exacto, sha deb48ce7...)
+        embebido como en el stock (esquema kernel-initramfs.config del SDK).
+        commit abc0595, entry 0x803e4ee0, DTB byte-idéntico al stock.
+        PRIMER KERNEL NUESTRO CON ESQUEMA DE ARRANQUE COMPLETO = fidelidad
+        máxima al stock + joydev.
+AVP:     stock a9788995 — NO tocado
+DTB:     stock 1258f1eb — NO tocado
+Sistema: TreeFrogUI v1.0.15 completo sobre FAT validada (sin cambios)
+
+RESULTADO ESPERADO: logo -> ~30-60s -> menú TreeFrogUI NAVEGABLE CON BOTONES.
+  (initramfs stock monta /dev/ram0 -> linuxrc -> bind-mounts rootfs SD -> init
+   stock -> zhijack -> cubevol/picoarch con /dev/input/js0)
+
+SI FALLA (logo quieto de nuevo): quedan 2 sospechosos (config stock vs nuestro
+  en opciones no-inferibles; dirección entry/alloca del kernel). Siguiente:
+  consola serie virtual (frogshell realterm) para diagnóstico en vivo.
+
+BACKUP EN ESTA SD: /backups-treelinux/2026-09-10_1437_r36sx/ (k2 fe16c9c4 + dtb + avp)
+BACKUP STOCK:       /backups-treelinux/2026-09-10_1317_r36sx/ (stock golden 53b3e0b3)
+ROLLBACK: copiar cualquiera de esos backups a /cubegm/ y listo.
+
+TRAS LA PRUEBA: reinsertar SD en PC — si booteó, log.txt tendrá el boot de k3
+  (procesos + navegación). Si no, 0 escrituras y seguimos con serie virtual.

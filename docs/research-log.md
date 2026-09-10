@@ -236,3 +236,34 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
   Checksums verificados post-copia. Éxito = MILESTONE (kernel nuestro + input).
   Fallo = siguiente paso consola serie virtual (frogshell realterm tfusbhost,
   backups LPTRACKER sd-prfix-20260910) — medio y k1 ya exculpados.
+
+### R30. ROOT CAUSE del logo eterno: initramfs stock embebido ausente en k1/k2 (2026-09-10 14:30)
+- Test #8 (k2 joydev sobre FAT VALIDADA del test #7): congela, **0 escrituras**
+  (logs byte-identicos al baseline stock). Medio exculpado → el kernel muere
+  pre-userland SIEMPRE con kernels nuestros.
+- Forense binario del stock golden `53b3e0b3` (payload raw 8709472 B descomprimido):
+  contiene un **initramfs CPIO newc SIN comprimir embebido de 3849052 B, 380 archivos**
+  (init→/sbin/init script devtmpfs, linuxrc→bin/busybox, bin/ etc/ lib/ dev/ y los
+  bind-mounts `mount --bind /media/${MNTDIR}/rootfs/{bin,etc,lib,sbin,usr}` — el
+  mecanismo real de arranque que trae el rootfs de la SD).
+- DTS r36sx bootargs: `root=/dev/ram0 rootfstype=ramfs rw init=/linuxrc` → sin
+  initramfs el kernel NO tiene raiz: panic silencioso pre-consola → 0 escrituras.
+- k1/k2 usan kernel-squashfs.config (sin INITRAMFS_SOURCE); el esquema initramfs
+  del SDK esta en kernel-initramfs.config (CONFIG_INITRAMFS_SOURCE=rootfs.cpio).
+- **CORRECCION CRITICA del test #1:** el log.txt de esa SD (backup 21:39) era un
+  log STALE de boot stock previo (zhijack rota log.txt→.prev al arrancar; los
+  4200 frames atribuidos a k1 eran del boot stock anterior). **k1 NUNCA booteó.**
+  Test #1 solo demostro: hcboot acepta cargar nuestro uImage (formato/CRC OK).
+  Matriz corregida: NINGUN kernel nuestro ha booteado; los 4 fallos (#2,#5,#6,#8)
+  tienen UNA causa comun (initramfs ausente) + co-causa media FAT corrupta en
+  tarjeta B vieja (tests #3/#4).
+- Extractor reproducible: `scripts/extract-stock-initramfs.sh` (parser cpio newc,
+  cpio mayor = 380 archivos, sha `deb48ce71bd93736144dd06fea9add68125a2c73b7adb9277ad7cc0f4829f05a`).
+  Bug fix documentado: `grep -q` en pipe con `pipefail` da falso negativo (SIGPIPE
+  a cpio) — lista a archivo antes de grep.
+- **k3** = variante `ramfs` nueva en build-kernel.sh: base squashfs + fragment
+  `r36sx-ramfs.fragment.config` (JOYDEV + INITRD + INITRAMFS_SOURCE=cpio stock).
+  Ruta absoluta requerida (kernel make resuelve desde su arbol — error relativo
+  documentado). Build OK: uImage `795b9da4...` 4353642 B (stock 3905970), entry
+  `0x803e4ee0`, manifest config_variant=ramfs, commit abc0595. Deploy test #9
+  14:37 con backup k2 en SD. Primer kernel con esquema de arranque COMPLETO.
