@@ -267,3 +267,28 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
   documentado). Build OK: uImage `795b9da4...` 4353642 B (stock 3905970), entry
   `0x803e4ee0`, manifest config_variant=ramfs, commit abc0595. Deploy test #9
   14:37 con backup k2 en SD. Primer kernel con esquema de arranque COMPLETO.
+
+### R31. TEST #9 MILESTONE: k3 BOOTEA COMPLETO + root-cause bateria (CHECK_ADC ausente)
+- **PRIMER BOOT FÍSICO CON KERNEL NUESTRO (k3 `795b9da4`, commit abc0595):**
+  consola inicia TreeFrogUI correctamente y NAVEGA con botones (input OK — joydev
+  funciona: cubevol lee /dev/input/js0). log.txt nuevo (sha 657a6b26) con 24001+
+  frames del menú (≈7 min runtime estable) vs 9001 del boot stock del test #7.
+  Boot log preservado: `docs/test-runs/log-2026-09-10_k3-firstboot.txt`
+  (+ tfhijack/picoarch/frogui-crash k3). zhijack rotó log.txt (userland full).
+  NOTA: proceso picoarch pid 1129 (k3) vs 573 (stock) — pids distintos, mismo flujo.
+- **Fallo residual: mensaje "batería agotándose" + apagado automático a los ~7 min,
+  incluso con batería puesta y cargando por OTG.** Forense:
+  1. log k3 SIN menciones battery/power → el mensaje no viene de logs Linux.
+  2. DTS r36sx (nodo board): `adc-bat-level = "/dev/check_adc1"`,
+     `adc-bat-charging = "/dev/check_adc5"`, `boot-adc-bat-level = "/dev/queryadc1"`,
+     `boot-adc-bat-charging = "/dev/queryadc5"` → batería se lee por driver ADC.
+  3. driver: `hcdrivers/adc/hc_check_adc.c` crea `/dev/check_adc%d` (línea 273,
+     compatible `hichip, hc16xx-check-adc` = match del DTS). Kconfig: `CHECK_ADC`
+     "poll adc driver", **default n** → k1/k2/k3 sin él.
+  4. stock strings: `hc16xx-check-adc`, `check_adc%d` PRESENTES (CONFIG_CHECK_ADC=y
+     en el stock). k3: AUSENTES (config: `# CONFIG_CHECK_ADC is not set`).
+  5. userland stock: `rootfs/usr/lib/driver.so` + `usr/bin/cubevol` contienen
+     `/dev/check_adc1`, `/dev/check_adc2`, `BatteryLevel2/4/5.c` → driver.so lee
+     check_adc para el nivel; sin nodo → lectura falla/0% → warning + poweroff.
+- **Fix k4 (test #10): `CONFIG_CHECK_ADC=y`** (driver del SDK ya en el árbol,
+  blob `get_adc_default_val_for_check.o` ya importado). Misma base que k3.
