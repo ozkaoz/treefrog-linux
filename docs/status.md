@@ -1,6 +1,6 @@
 # Status — treefrog-linux
 
-Actualizado: 2026-09-10 02:35 (FASE A/B/C/D completadas; test #5 en curso)
+Actualizado: 2026-09-10 13:00 (test #5 falló sin escrituras; test #6 bisección en curso)
 
 ## Working
 
@@ -22,16 +22,18 @@ Actualizado: 2026-09-10 02:35 (FASE A/B/C/D completadas; test #5 en curso)
 
 ## In progress
 
-- **TEST #5 (2026-09-10 02:30):** sistema TreeFrogUI completo + nuestro kernel #2 JOYDEV.
-  Restaurado el estado 21:39 (que booteó en test #1) + `out/r36sx/vmlinux.uImage`
-  `fe16c9c4...` (joydev). Ver `docs/test-runs/2026-09-10_0230_r36sx.md`.
-  Conclusión de test #3/#4: una SD con SOLO kernel+AVP+DTB (kernel-only) no arranca —
-  hcboot requiere el sistema `cubegm/` completo. El mensaje `Please insert TF card`
-  aparece al no poder montar la FAT (geometría/causa aún por confirmar en test #5).
+- **TEST #6 (2026-09-10 13:00): BISECCIÓN k1 sobre tarjeta B.** Test #5 (k2 JOYDEV
+  sobre sistema completo en tarjeta B) = logo quieto con CERO escrituras en SD (logs
+  byte-idénticos al backup → userland nunca corrió). k1/k2 difieren SOLO en joydev
+  (verificado con diff de configs efectivos; k2 gunzip OK; dumpimage OK).
+  Deployado k1 `875854cb` (único kernel nuestro con boot físico demostrado, test #1)
+  sobre la tarjeta B actual: si boota → culpable k2/joydev-build; si congela →
+  culpable la tarjeta B (geometría FAT 32K/inactiva/60GB). Ver
+  `docs/test-runs/2026-09-10_1300_r36sx-k1bisect.md`.
 
 ## Blocked
 
-- (nada; esperando prueba física del test #5)
+- (nada; esperando prueba física del test #6 — bisección k1 vs tarjeta B)
 
 ## Missing
 
@@ -39,24 +41,31 @@ Actualizado: 2026-09-10 02:35 (FASE A/B/C/D completadas; test #5 en curso)
   hcboot ACEPTA nuestro uImage sin validación que lo rechace — booteó 2 veces).
 - Pendiente: config exacto stock (más opciones que joydev pueden diferir — se iterará por
   evidencia), licencia blobs .o.
+- **Tarjeta A original del test #1 (SD stock 2026-08-24): paradero por confirmar** — sería
+  el medio conocido-bueno para separar kernel de tarjeta si test #6 congela.
 
 ## Next
 
-1. Usuario prueba la SD en la R36SX y reporta resultado (logo negro/congela/arranca menú).
-2. Completar `docs/test-runs/2026-09-09_1934_r36sx.md` con boot log/síntomas.
-3. Si arranca: FASE E bring-up por subsistemas. Si no: iterar config (ver docs/testing.md diagnóstico).
-4. FASE F: initramfs propio BusyBox → rootfs TreeFrog → FrogUI directo.
-5. FASE G: caracterizar R36HD/SF3000/SF3500/GB350 (backups stock identificados en docs/device-matrix.md).
+1. Usuario prueba test #6 en la R36SX (k1 en tarjeta B) y reporta: menú tras ~30-60 s
+   (input muerto = esperado) o logo quieto.
+2. Boot OK → culpable = k2/joydev-build → siguiente: serial console real (bootargs
+   `console=tty1` — sin UART log) para ver dónde muere k2, o rebuild k2 bisecando el delta.
+3. Congela → culpable = tarjeta B → recuperar tarjeta A original o reformatear B
+   (clúster 4K + partición activa, con backup previo).
+4. Completar test-run #6 con evidencia; FASE E bring-up por subsistemas tras boot estable.
+5. FASE F: initramfs propio BusyBox → rootfs TreeFrog → FrogUI directo.
+6. FASE G: caracterizar R36HD/SF3000/SF3500/GB350 (backups stock identificados en docs/device-matrix.md).
 
 ## Last known bootable commit
 
-- **ac04c73** + build `fe16c9c4...` (kernel #2 JOYDEV, deploy test #5, PENDIENTE confirmación).
-- Boot anterior confirmado físicamente: 81ecf9a (kernel #1 — sistema completo arriba,
-  menú renderizado, input muerto por falta de joydev; test-run 1934).
+- **81ecf9a** + build k1 `875854cb...` (kernel #1 — ÚNICO boot físico confirmado,
+  sistema completo arriba, menú renderizado, input muerto sin joydev; test #1, tarjeta A).
+- Deploy actual en SD (tarjeta B): k1 `875854cb` (test #6 bisección, PENDIENTE).
+- k2 `fe16c9c4` (joydev): test #2 y #5 = congela, 0 escrituras (NO bootable hasta ahora).
 
 ## Last tested board
 
-- R36SX (boot confirmado con nuestro kernel en test #1; test #5 en curso)
+- R36SX (boot confirmado con k1 en test #1/tarjeta A; test #6 en curso en tarjeta B)
 
 ## Last test result
 

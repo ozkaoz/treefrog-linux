@@ -1,0 +1,38 @@
+treefrog-linux TEST #6 (2026-09-10) — BISECCIÓN: kernel k1 (probado bueno) sobre tarjeta B actual
+===============================================================================
+Kernel: k1 = NUESTRO vmlinux.uImage sha 875854cb... (SIN joydev)
+        Linux 4.4.186 + 41 patches Hichip + hcdrivers, commit 81ecf9a.
+        ESTE KERNEL YA BOOTEO EL SISTEMA COMPLETO EN TEST #1 (tarjeta A original):
+        logo -> kernel -> init stock -> zhijack -> FrogUI menu renderizando 4200+ frames.
+        En ese test el unico fallo fue input muerto (sin joydev, a proposito en ese build).
+
+AVP:    stock (a9788995...) — NO tocado
+DTB:    stock byte-identico (1258f1eb...)
+Sistema: TreeFrogUI completo restaurado desde backup 21:39 (igual que test #5).
+
+POR QUE ESTA PRUEBA:
+  Test #5 congelo con kernel k2 (joydev) y CERO escrituras en la SD (logs byte-identicos
+  al backup -> el userland nunca arranco). k2 solo difiere de k1 en CONFIG_INPUT_JOYDEV=y
+  (verificado: diff de configs efectivos = 1 linea; payloads descomprimen limpio).
+  Falta saber si la causa es (a) el kernel k2 o (b) la TARJETA B (60GB, FAT32 clúster 32K,
+  particion IsActive=False — distinta de la tarjeta A original con la que k1 booto).
+  Este test aísla la variable: si k1 boota aqui -> culpable el k2/joydev-build.
+  Si k1 TAMBIEN congela -> culpable la tarjeta B (geometria/compatibilidad), y se
+  recupera la tarjeta A original o se reformatea B.
+
+RESULTADO POSITIVO (boot completo): logo -> ~30-60s -> menu TreeFrogUI en pantalla.
+  (Con input muerto de nuevo: es k1, no tiene joydev — ES LO ESPERADO.)
+  ESO SIGNIFICARIA: k2/joydev es el culpable del test #5 -> siguiente paso es recompilar
+  k2 con rutas de solo-joydev y re-test, o investigar serial console.
+
+RESULTADO NEGATIVO (logo quieto ~2+ min sin avanza): la tarjeta B es el problema.
+  Recuperar la SD ORIGINAL de test #1 (si se conserva) o reformatear B.
+
+VERIFICACIONES POST-PRUEBA (despues de retirar la SD):
+  1. log.txt rota? (nuevo contenido = kernel booto userland)
+  2. game_history.txt / tfhijack.log cambian?
+  TODO cambio se registra y se compara contra el backup 21:39.
+
+RESTAURAR KERNEL STOCK: boards/r36sx golden 53b3e0b3 (vmlinux.uImage.stock)
+RESTAURAR KERNEL K2:     out/r36sx/vmlinux.uImage (fe16c9c4...)
+BACKUP SISTEMA COMPLETO: D:\R36SX\sd-full-backups\2026-09-09_2139_treefrog-test-sd

@@ -184,3 +184,21 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
 - Documentación: `docs/test-runs/2026-09-10_0230_r36sx.md` + NOTAS-PRUEBA.txt v5 en SD.
 - PENDIENTE: prueba física; si vuelve «TF card» → la causa es geometría FAT/MBR y se
   reformateará (con backup previo) a clúster 4K + partición activa.
+
+### R27. Forense test #5 + verificación k1/k2 (2026-09-10 13:00)
+- Test #5 (k2 JOYDEV `fe16c9c4` sobre sistema completo en tarjeta B): logo quieto.
+  Forense: 5 logs de la SD byte-idénticos al backup 21:39 (sha256), 4693 archivos =
+  backup + NOTAS → zhijack nunca rotó log.txt → **userland nunca corrió** (muerte
+  pre-userland o imposibilidad de montar/escribir FAT de la tarjeta B).
+- Evidencia de que k2 es estructuralmente válido: gunzip del payload completo OK
+  (raw 5812924 B, delta k2-k1 = +8240 B ≈ joydev), `dumpimage -l` OK (CRC, entry
+  0x803e4930), strings: `joydev: failed to reserve new minor`, `&joydev->mutex`.
+- **Diff de configs efectivos k1 vs k2** (reproducido sin compilar: cp base →
+  merge_config fragment → olddefconfig, ambas rutas): exactamente 1 línea
+  `CONFIG_INPUT_JOYDEV=y`. NO hay drift oculto del merge.
+- Conclusión bisección pendiente: k1 (boot probado en tarjeta A, test #1) desplegado
+  sobre tarjeta B = test #6. Separa variable kernel-k2 de variable tarjeta-B
+  (60 GB, clúster 32K, IsActive=False — distinta de la tarjeta A original).
+- Comandos clave: `sha256sum` logs SD vs backup; `python3` FDT-scan (magic d00dfeed:
+  NO está en los uImages — el DTB viaja aparte, coherente con MIPS_NO_APPENDED_DTB);
+  `gunzip -c` payload; `diff` configs efectivos; `dumpimage -l`.
