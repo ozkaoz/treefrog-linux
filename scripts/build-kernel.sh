@@ -41,15 +41,26 @@ elif [ -f "$VENDOR_BOARD/dts/$DTS_NAME.dts" ]; then
 else
   echo "ERROR: no encuentro $DTS_NAME.dts ni en boards/$DTS_NAME/dts/ ni en $VENDOR_BOARD/dts"; exit 1
 fi
-KERNEL_CONFIG="$VENDOR_BOARD/kernel-configs/$KERNEL_VERSION/kernel-$CONFIG_VARIANT.config"
+# kernel-only experiment: fragment alternativo + initramfs propio embebido.
+# Uso: build-kernel.sh <board> kernelonly  (base = kernel-squashfs.config + fragment propio)
+KERNEL_ONLY=0
+BASE_VARIANT="$CONFIG_VARIANT"
+if [ "$CONFIG_VARIANT" = "kernelonly" ]; then
+  KERNEL_ONLY=1
+  BASE_VARIANT="squashfs"
+  FRAGMENT="$ROOT/boards/$DTS_NAME/config/$DTS_NAME-kernelonly.fragment.config"
+  [ -f "$FRAGMENT" ] || { echo "ERROR: falta $FRAGMENT"; exit 1; }
+fi
+KERNEL_CONFIG="$VENDOR_BOARD/kernel-configs/$KERNEL_VERSION/kernel-$BASE_VARIANT.config"
 [ -f "$KERNEL_CONFIG" ] || { echo "ERROR: no existe $KERNEL_CONFIG"; exit 1; }
+INITRAMFS_CPIO="$ROOT/build/initramfs-$DTS_NAME/tf-initramfs.cpio.gz"
+if [ "$KERNEL_ONLY" = "1" ] && [ ! -f "$INITRAMFS_CPIO" ]; then
+  echo "ERROR: falta $INITRAMFS_CPIO — constrúyelo primero"; exit 1
+fi
 
-# config fragment de la board (opcional): se aplica via merge_config (flujo Buildroot
-# BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES). Cada línea del fragment DEBE tener evidencia
-# documentada en boards/<board>/config/ y docs/boards/<board>.md.
-FRAGMENT=""
-if [ -f "$ROOT/boards/$DTS_NAME/config/$DTS_NAME.fragment.config" ]; then
-  FRAGMENT="$ROOT/boards/$DTS_NAME/config/$DTS_NAME.fragment.config"
+INITRAMFS_CPIO="$ROOT/build/initramfs-$DTS_NAME/tf-initramfs.cpio.gz"
+if [ "$KERNEL_ONLY" = "1" ] && [ ! -f "$INITRAMFS_CPIO" ]; then
+  echo "ERROR: falta $INITRAMFS_CPIO — constrúyelo primero"; exit 1
 fi
 
 mkdir -p "$BOARD_OUT"
@@ -57,6 +68,17 @@ cd "$KERNEL_DIR"
 
 echo "== preparando config (kernel-$CONFIG_VARIANT.config) =="
 cp "$KERNEL_CONFIG" .config
+if [ "$KERNEL_ONLY" = "1" ]; then
+  # experimento kernel-only: initramfs propio embebido (esquema de la variante
+  # vendor kernel-initramfs.config: INITRAMFS_SOURCE=<cpio> + ELF_APPENDED_DTB)
+  if [ -f "$INITRAMFS_CPIO" ]; then
+    cat >> .config <<EOF
+CONFIG_INITRAMFS_SOURCE="$INITRAMFS_CPIO"
+EOF
+  else
+    echo "ERROR: falta $INITRAMFS_CPIO — constrúyelo primero (rootfs/tfinit + make_initramfs)"; exit 1
+  fi
+fi
 if [ -n "$FRAGMENT" ]; then
   echo "  + fragment: $FRAGMENT"
   # merge_config del kernel: aplica el fragment sobre .config con 'make alldefconfig' final
@@ -144,8 +166,20 @@ cp vmlinux "$BOARD_OUT/vmlinux"
 # 1) vmlinux.bin: raw binary (formato del SDK)
 "$TOOLCHAIN_BIN/mips-mti-linux-gnu-objcopy" -O binary vmlinux "$BOARD_OUT/vmlinux.bin"
 # 2) vmlinux.uImage: legacy uImage gzip — EXACTO al formato stock de las consolas:
-#    payload = vmlinux.bin gzipeado (SIN DTB: hcboot carga dtb.bin aparte; evidencia
-#    del stock: payload descomprimido = binario raw, IKCFG ausente, DTB separado en SD)
+#    payload = vmlinux.bin gzipeado. En modo normal SIN DTB (hcboot carga dtb.bin
+#    aparte; evidencia del stock: payload raw, DTB separado en SD).
+#    En modo kernelonly (initramfs): DTB embebido en el ELF via objcopy
+#    --update-section .appended_dtb (esquema de la variante vendor kernel-initramfs
+#    con CONFIG_MIPS_ELF_APPENDED_DTB) porque el initramfs NO puede depender de
+#    que hcboot entregue el DTB de la SD.
+if [ "$KERNEL_ONLY" = "1" ]; then
+  if "$TOOLCHAIN_BIN/mips-mti-linux-gnu-readelf" -S vmlinux | grep -q '\.appended_dtb'; then
+    "$TOOLCHAIN_BIN/mips-mti-linux-gnu-objcopy" --update-section .appended_dtb="$DTB_PATH" vmlinux
+  else
+    "$TOOLCHAIN_BIN/mips-mti-linux-gnu-objcopy" --add-section .appended_dtb="$DTB_PATH" vmlinux
+  fi
+  "$TOOLCHAIN_BIN/mips-mti-linux-gnu-objcopy" -O binary vmlinux "$BOARD_OUT/vmlinux.bin"
+fi
 gzip -9 -c "$BOARD_OUT/vmlinux.bin" > "$BOARD_OUT/vmlinux.bin.gz"
 ENTRY_ADDR=$("$TOOLCHAIN_BIN/mips-mti-linux-gnu-readelf" -h vmlinux | awk '/Entry point address/{print $4}')
 mkimage -A mips -O linux -T kernel -C gzip -a 0x80000000 -e "$ENTRY_ADDR" \

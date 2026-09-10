@@ -22,12 +22,14 @@ Actualizado: 2026-09-09 19:35 (FASE A/B/C/D completadas — deploy físico reali
 
 ## In progress
 
-- **RE-TEST kernel #2 (joydev):** deployado 21:54 (sha `9f5d3f9c...`). El usuario debe
-  probar en consola. Esperado: menú TreeFrogUI navegable con botones.
+- **PRUEBA KERNEL-ONLY (SD limpia):** uImage `465d5fdb...` (kernel 4.4.186+Hichip con
+  initramfs tfinit propio + DTB stock embebido) en SD borrada por completo — cero
+  TreeFrogUI, cero SO stock. Esperado: barras de color en pantalla si el kernel vive.
+  Ver docs/test-runs/2026-09-09_2255_r36sx-kernelonly.md.
 
 ## Blocked
 
-- (nada técnico; esperando prueba física del kernel #2)
+- (nada; esperando prueba física)
 
 ## Missing
 
