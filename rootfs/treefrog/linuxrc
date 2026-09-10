@@ -32,13 +32,14 @@ if (/bin/busybox exec 0</dev/console) 2>/dev/null; then
     /bin/busybox exec 2>/dev/console
 fi
 
-LOG=/dev/null
-[ -f /mnt/sdcard/log.txt ] && LOG=/mnt/sdcard/log.txt
-echo "=== treefrog-linux init [r36sx] $(date '+%H:%M:%S') ===" > "$LOG" 2>/dev/null || true
+# log: opt-in SIEMPRE en RAM (la SD aun no esta montada aqui); tras montar,
+# si existe /mnt/sdcard/log.txt lo promovemos (forense como zhijack)
+LOG=/tmp/tf-init.log
+echo "=== treefrog-linux init [r36sx] $(date '+%H:%M:%S') ===" > "$LOG"
 
 # --- 2. hcdaemon: puente AMPRPC hacia el AVP stock (audio/display) --------------
 /usr/bin/hcdaemon &
-echo "hcdaemon started" >> "$LOG" 2>/dev/null
+echo "hcdaemon started" >> "$LOG"
 
 # --- 3. hotplug + montar la SD --------------------------------------------------
 /bin/busybox echo /sbin/mdev > /proc/sys/kernel/hotplug 2>/dev/null || true
@@ -62,9 +63,28 @@ if [ -z "$MNTDIR" ]; then
     # mantener vivo el kernel para forense por consola
     while :; do /bin/busybox sleep 10; done
 fi
-
 echo "sd: $MNTDIR -> /mnt/sdcard" >> "$LOG"
 /bin/busybox mount --bind "$MNTDIR" /mnt/sdcard
+
+# promover el log a la SD si el usuario lo tiene activado (opt-in como zhijack)
+if [ -f /mnt/sdcard/log.txt ]; then
+    /bin/busybox mv /mnt/sdcard/log.txt /mnt/sdcard/log.txt.prev 2>/dev/null
+    /bin/busybox cat "$LOG" > /mnt/sdcard/log.txt
+    LOG=/mnt/sdcard/log.txt
+    /bin/busybox sync
+fi
+
+# swap: la consola es RAM<=128MB y el stock activa pagefile.sys (S99app:
+# swapon /mnt/sdcard/cubegm/pagefile.sys) — sin swap, picoarch+FrogUI mueren
+# tras el fb-init por OOM (evidencia test #11: 2 muertes tempranas de picoarch
+# pid 1134, frogui_crash retro_init repetido sin completar el bucle)
+if [ -f /mnt/sdcard/cubegm/pagefile.sys ]; then
+    /bin/busybox swapon /mnt/sdcard/cubegm/pagefile.sys 2>>"$LOG"
+    /bin/busybox free 2>/dev/null | /bin/busybox grep -i swap >> "$LOG" \
+        && echo "swap ON: pagefile.sys" >> "$LOG"
+else
+    echo "WARN: sin pagefile.sys — FrogUI puede morir por RAM" >> "$LOG"
+fi
 
 # rootfs stock de la SD: binarios (picoarch, drivers, cubevol alternativo)
 if [ -d "$MNTDIR/rootfs" ]; then
@@ -105,6 +125,9 @@ PICOARCH_HI=/mnt/sdcard/cubegm/picoarch_hi
 FROGUI_CORE=/mnt/sdcard/cubegm/cores/frogui_libretro.so
 LAUNCH=/tmp/frogui_launch.txt
 
+# estado del sistema al entrar al loop (diagnóstico K0)
+/bin/busybox free >> "$LOG" 2>/dev/null
+echo "--- /proc/mounts:" >> "$LOG"; /bin/busybox cat /proc/mounts >> "$LOG" 2>/dev/null
 echo "init complete; entering frogui loop" >> "$LOG"
 
 ITER=0
@@ -115,6 +138,10 @@ while :; do
     "$PICOARCH" "$FROGUI_CORE" "$FROGUI_CORE" >> /tmp/treefrog_ui.log 2>&1
     RC=$?
     echo "frogui exited rc=$RC" >> "$LOG"
+    # stderr de picoarch al log SD para diagnóstico (las muertes tempranas
+    # del test #11 no dejaban rastro: /tmp se pierde al apagar)
+    /bin/busybox tail -20 /tmp/treefrog_ui.log >> "$LOG" 2>/dev/null
+    /bin/busybox free >> "$LOG" 2>/dev/null
 
     [ -f "$LAUNCH" ] || { /bin/busybox sleep 1; continue; }
 

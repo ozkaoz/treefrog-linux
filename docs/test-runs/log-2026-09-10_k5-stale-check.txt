@@ -1,0 +1,419 @@
+=== zhijack boot [r36sx] 00:00:06 ===
+icube frozen, rkgame killed
+processes at boot:
+PID   USER     COMMAND
+    1 root     init
+    2 root     [kthreadd]
+    3 root     [ksoftirqd/0]
+    4 root     [kworker/0:0]
+    5 root     [kworker/0:0H]
+    6 root     [kworker/u2:0]
+    7 root     [rcu_preempt]
+    8 root     [rcu_sched]
+    9 root     [rcu_bh]
+   10 root     [kdevtmpfs]
+   11 root     [kworker/u2:1]
+  206 root     [writeback]
+  208 root     [crypto]
+  209 root     [bioset]
+  211 root     [kblockd]
+  312 root     [rpcwork0]
+  313 root     [rpcwork1]
+  314 root     [rpcwork2]
+  315 root     [rpcwork3]
+  316 root     [rpcwork4]
+  317 root     [rpcwork5]
+  318 root     [rpcwork6]
+  319 root     [rpcwork7]
+  321 root     [kworker/0:1]
+  328 root     [kswapd0]
+  329 root     [fsnotify_mark]
+  897 root     [kworker/u2:2]
+  911 root     [spi32766]
+  915 root     [bioset]
+  920 root     [bioset]
+  926 root     [bioset]
+  931 root     [bioset]
+  982 root     [bioset]
+  983 root     [mmcqd/0]
+ 1013 root     [deferwq]
+ 1079 root     hcdaemon
+ 1091 root     [kworker/0:1H]
+ 1095 root     /bin/sh --
+ 1096 root     /mnt/sdcard/cubegm/icube
+ 1098 root     [rkgame]
+ 1103 root     /bin/sh /tmp/treefrog-zhijack.sh
+ 1108 root     /usr/bin/cubevol
+ 1119 root     ps
+CPU frequency policy after performance request:
+/sys/devices/system/cpu/cpu*/cpufreq governor= cur= min= max= hwmax=
+--- iter 1: frogui ---
+DBG picoarch start: text~0x421f98 (hi if 0x2x) argv1=/mnt/sdcard/cubegm/cores/frogui_libretro.so next-bin=/mnt/sdcard/cubegm/picoarch
+DBG load_frogui_settings: filter override=0 → scale_filter=1
+DBG load_frogui_settings: quick_resume=0 autosave_autoload=0
+DBG device: R36SX panel=640x480 ui_scale=150
+DBG /proc/fb: 0 hcfb
+DBG /proc/fb: 1 hcfb
+DBG sf3000_fb_init: PRE-FBIOPUT 480x854(v480x13664) bpp=16 off=0,0
+DBG sf3000_fb_init: FBIOPAN_DISPLAY(0,0) ret=0
+DBG sf3000_fb_init: FBIOBLANK(1)=0 (0)=0
+DBG dump[fb_init/post] /dev/fb0: 720x1280(v720x2560) bpp=32 off=0,0 rot=0 line=2880 smem_start=0xaf92000 smem_len=14749264 type=0 visual=2
+DBG dump[fb_init/post] /dev/fb6: open failed (errno=2)
+DBG dump[fb_init/post] /dev/fb22: open failed (errno=2)
+DBG dump[hwdisp_init/pre] /dev/fb0: 720x1280(v720x2560) bpp=32 off=0,0 rot=0 line=2880 smem_start=0xaf92000 smem_len=14749264 type=0 visual=2
+DBG dump[hwdisp_init/pre] /dev/fb6: open failed (errno=2)
+DBG dump[hwdisp_init/pre] /dev/fb22: open failed (errno=2)
+DBG hwdisp: loaded /mnt/sdcard/cubegm/driver_r36sx.so
+DBG hwdisp: setmode=0x76220504 calling setmode(0,0)
+DBG hwdisp: setmode(0,0) ret=17
+DBG dump[hwdisp_init/post] /dev/fb0: 1280x720(v1280x5040) bpp=16 off=0,0 rot=0 line=2560 smem_start=0xaf92000 smem_len=14749264 type=0 visual=2
+DBG dump[hwdisp_init/post] /dev/fb6: open failed (errno=2)
+DBG dump[hwdisp_init/post] /dev/fb22: open failed (errno=2)
+DBG M1: fb_init ok
+DBG M2: sdl surface ok
+DBG A: speaker gate ON (cubegm/spk_gate.txt default)
+DBG M3: sound init done
+DBG A: clean AUDDEC/I2SO startup cycle
+DBG core symbols: video_set=0x71a485a8 audio_set=0x71a485c0 run=0x71a4b31c load=0x71a4b30c
+DBG video callback registered: core=/mnt/sdcard/cubegm/cores/frogui_libretro.so fn=0x40bcc4
+DBG alloc_config_buffer: try game-cfg=/mnt/sdcard/picoarch/cores/frogui_libretro.cfg
+DBG alloc_config_buffer: try global-cfg=/mnt/sdcard/picoarch/cores/picoarch.cfg
+DBG alloc_config_buffer: global-cfg MISS
+DBG R: plat_reinit in_rate=0 out_rate=48000
+DBG main: post-load_config scale_filter=0 scale_size=1 override=0
+DBG main: post-FrogUI-override scale_filter=0 quick_resume=0 autosave_autoload=0
+DBG M4: pre core_load
+DBG M5: core_load done
+DBG M5a: load_game_info (unzip if needed)
+DBG M5b: retro_load_game path=/mnt/sdcard/cubegm/cores/frogui_libretro.so
+DBG M5c: retro_load_game returned
+DBG M5d: sram_read
+DBG M5e: get_system_av_info
+DBG M5f: av 640x480 rate=44100 fps*100=6000, plat_reinit
+DBG R: plat_reinit in_rate=44100 out_rate=48000
+DBG M6: content loaded, entering run loop
+DBG alloc_config_buffer: try game-cfg=/mnt/sdcard/picoarch/cores/frogui_libretro.cfg
+DBG alloc_config_buffer: try global-cfg=/mnt/sdcard/picoarch/cores/picoarch.cfg
+DBG alloc_config_buffer: global-cfg MISS
+DBG retro_run begin pid=1133 n=1 core=frogui quit=0
+DBG video_refresh entry pid=1133 n=1 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=1 size=640x480 pitch=1280 fmt=2
+DBG blit#1: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG driver aspect: api_arg=1 global_fullscreen=0 live_ctx=0x881848 live_fullscreen=15793920->0 mode=aspect-fit
+DBG present_direct#1: pre disp_frame 640x480 scale=1
+DBG present_direct#1: post rv=0
+DBG retro_run begin pid=1133 n=2 core=frogui quit=0
+DBG retro_run begin pid=1133 n=3 core=frogui quit=0
+DBG retro_run begin pid=1133 n=4 core=frogui quit=0
+DBG retro_run begin pid=1133 n=5 core=frogui quit=0
+DBG retro_run begin pid=1133 n=6 core=frogui quit=0
+DBG retro_run begin pid=1133 n=7 core=frogui quit=0
+DBG retro_run begin pid=1133 n=8 core=frogui quit=0
+DBG retro_run begin pid=1133 n=9 core=frogui quit=0
+DBG retro_run begin pid=1133 n=10 core=frogui quit=0
+DBG retro_run begin pid=1133 n=11 core=frogui quit=0
+DBG retro_run begin pid=1133 n=12 core=frogui quit=0
+DBG retro_run begin pid=1133 n=13 core=frogui quit=0
+DBG retro_run begin pid=1133 n=14 core=frogui quit=0
+DBG retro_run begin pid=1133 n=15 core=frogui quit=0
+DBG retro_run begin pid=1133 n=16 core=frogui quit=0
+DBG retro_run begin pid=1133 n=17 core=frogui quit=0
+DBG retro_run begin pid=1133 n=18 core=frogui quit=0
+DBG retro_run begin pid=1133 n=19 core=frogui quit=0
+DBG retro_run begin pid=1133 n=20 core=frogui quit=0
+DBG retro_run begin pid=1133 n=21 core=frogui quit=0
+DBG retro_run begin pid=1133 n=22 core=frogui quit=0
+DBG retro_run begin pid=1133 n=23 core=frogui quit=0
+DBG retro_run begin pid=1133 n=24 core=frogui quit=0
+DBG retro_run begin pid=1133 n=601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=1201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=1801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=2401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=3001 core=frogui quit=0
+DBG video_refresh entry pid=1133 n=2 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=2 size=640x480 pitch=1280 fmt=2
+DBG blit#2: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#2: pre disp_frame 640x480 scale=1
+DBG present_direct#2: post rv=0
+DBG retro_run begin pid=1133 n=3601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=4201 core=frogui quit=0
+DBG video_refresh entry pid=1133 n=3 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=3 size=640x480 pitch=1280 fmt=2
+DBG blit#3: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#3: pre disp_frame 640x480 scale=1
+DBG present_direct#3: post rv=0
+DBG video_refresh entry pid=1133 n=4 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=4 size=640x480 pitch=1280 fmt=2
+DBG blit#4: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#4: pre disp_frame 640x480 scale=1
+DBG present_direct#4: post rv=0
+DBG video_refresh entry pid=1133 n=5 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=5 size=640x480 pitch=1280 fmt=2
+DBG blit#5: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#5: pre disp_frame 640x480 scale=1
+DBG present_direct#5: post rv=0
+DBG retro_run begin pid=1133 n=4801 core=frogui quit=0
+DBG video_refresh entry pid=1133 n=6 data=0x7157e008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=6 size=640x480 pitch=1280 fmt=2
+DBG blit#6: src=0x7157e008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#6: pre disp_frame 640x480 scale=1
+DBG present_direct#6: post rv=0
+DBG video_refresh entry pid=1133 n=7 data=0x7157e008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=7 size=640x480 pitch=1280 fmt=2
+DBG blit#7: src=0x7157e008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#7: pre disp_frame 640x480 scale=1
+DBG present_direct#7: post rv=0
+DBG video_refresh entry pid=1133 n=8 data=0x7157e008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=8 size=640x480 pitch=1280 fmt=2
+DBG blit#8: src=0x7157e008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#8: pre disp_frame 640x480 scale=1
+DBG present_direct#8: post rv=0
+DBG video_refresh entry pid=1133 n=9 data=0x7157e008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=9 size=640x480 pitch=1280 fmt=2
+DBG blit#9: src=0x7157e008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=10 data=0x7157e008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=10 size=640x480 pitch=1280 fmt=2
+DBG blit#10: src=0x7157e008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=11 data=0x7157e008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=11 size=640x480 pitch=1280 fmt=2
+DBG blit#11: src=0x7157e008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=12 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=12 size=640x480 pitch=1280 fmt=2
+DBG blit#12: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=13 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=13 size=640x480 pitch=1280 fmt=2
+DBG blit#13: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=14 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=14 size=640x480 pitch=1280 fmt=2
+DBG blit#14: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=15 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=15 size=640x480 pitch=1280 fmt=2
+DBG blit#15: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=16 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=16 size=640x480 pitch=1280 fmt=2
+DBG blit#16: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=17 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=17 size=640x480 pitch=1280 fmt=2
+DBG blit#17: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=18 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=18 size=640x480 pitch=1280 fmt=2
+DBG blit#18: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=19 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=19 size=640x480 pitch=1280 fmt=2
+DBG blit#19: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=20 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=20 size=640x480 pitch=1280 fmt=2
+DBG blit#20: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=21 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=21 size=640x480 pitch=1280 fmt=2
+DBG blit#21: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=22 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=22 size=640x480 pitch=1280 fmt=2
+DBG blit#22: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=23 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=23 size=640x480 pitch=1280 fmt=2
+DBG blit#23: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG video_refresh entry pid=1133 n=24 data=0x72969008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=1133 n=24 size=640x480 pitch=1280 fmt=2
+DBG blit#24: src=0x72969008 screen=0x74ba8008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=1133 n=5401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=6001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=6601 core=frogui quit=0
+DBG A: overrun #1; dropped 480 oldest frames
+DBG A: overrun #2; dropped 480 oldest frames
+DBG A: overrun #3; dropped 480 oldest frames
+DBG retro_run begin pid=1133 n=7201 core=frogui quit=0
+DBG A: overrun #4; dropped 480 oldest frames
+DBG retro_run begin pid=1133 n=7801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=8401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=9001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=9601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=10201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=10801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=11401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=12001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=12601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=13201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=13801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=14401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=15001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=15601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=16201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=16801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=17401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=18001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=18601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=19201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=19801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=20401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=21001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=21601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=22201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=22801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=23401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=24001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=24601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=25201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=25801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=26401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=27001 core=frogui quit=0
+DBG A: overrun #5; dropped 480 oldest frames
+DBG A: overrun #6; dropped 480 oldest frames
+DBG A: overrun #7; dropped 480 oldest frames
+DBG A: overrun #8; dropped 480 oldest frames
+DBG retro_run begin pid=1133 n=27601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=28201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=28801 core=frogui quit=0
+DBG A: overrun #16; dropped 480 oldest frames
+DBG retro_run begin pid=1133 n=29401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=30001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=30601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=31201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=31801 core=frogui quit=0
+DBG A: overrun #32; dropped 480 oldest frames
+DBG retro_run begin pid=1133 n=32401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=33001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=33601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=34201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=34801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=35401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=36001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=36601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=37201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=37801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=38401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=39001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=39601 core=frogui quit=0
+DBG A: overrun #64; dropped 480 oldest frames
+DBG retro_run begin pid=1133 n=40201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=40801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=41401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=42001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=42601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=43201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=43801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=44401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=45001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=45601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=46201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=46801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=47401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=48001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=48601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=49201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=49801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=50401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=51001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=51601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=52201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=52801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=53401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=54001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=54601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=55201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=55801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=56401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=57001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=57601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=58201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=58801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=59401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=60001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=60601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=61201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=61801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=62401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=63001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=63601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=64201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=64801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=65401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=66001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=66601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=67201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=67801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=68401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=69001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=69601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=70201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=70801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=71401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=72001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=72601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=73201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=73801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=74401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=75001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=75601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=76201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=76801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=77401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=78001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=78601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=79201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=79801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=80401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=81001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=81601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=82201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=82801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=83401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=84001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=84601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=85201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=85801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=86401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=87001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=87601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=88201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=88801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=89401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=90001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=90601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=91201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=91801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=92401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=93001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=93601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=94201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=94801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=95401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=96001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=96601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=97201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=97801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=98401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=99001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=99601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=100201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=100801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=101401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=102001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=102601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=103201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=103801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=104401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=105001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=105601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=106201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=106801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=107401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=108001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=108601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=109201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=109801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=110401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=111001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=111601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=112201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=112801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=113401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=114001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=114601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=115201 core=frogui quit=0
+DBG retro_run begin pid=1133 n=115801 core=frogui quit=0
+DBG retro_run begin pid=1133 n=116401 core=frogui quit=0
+DBG retro_run begin pid=1133 n=117001 core=frogui quit=0
+DBG retro_run begin pid=1133 n=117601 core=frogui quit=0
+DBG retro_run begin pid=1133 n=118201 core=frogui quit=0
+DBG quit: use_hwdisp=1 next_standalone=1 core_path[0]=1 rom_path[0]=1

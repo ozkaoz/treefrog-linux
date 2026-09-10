@@ -1,6 +1,6 @@
 # Status — treefrog-linux
 
-Actualizado: 2026-09-10 15:40 (FASE F: k5 = init propio, test #11 desplegado)
+Actualizado: 2026-09-10 16:05 (test #11: OOM sin swap; k6 = swap+logging, test #12)
 
 ## Working
 
@@ -22,17 +22,12 @@ Actualizado: 2026-09-10 15:40 (FASE F: k5 = init propio, test #11 desplegado)
 
 ## In progress
 
-- **FASE F — TEST #11 (2026-09-10 15:37): k5 = init PROPIO.** k4 es el golden
-  (boot+input+batería). k5 sustituye el initramfs stock por NUESTRO initramfs
-  (371 archivos, sha 5bf44e55): linuxrc propio que monta SD, lanza hcdaemon +
-  cubevol + picoarch+FrogUI DIRECTO (sin icube/rkgame/zhijack). Componentes
-  firmware reutilizados: busybox, lib/, hcdaemon, hotplug_helper (empaquetados
-  por scripts/build-initramfs.sh, no redistribuidos). Ver
-  `docs/test-runs/2026-09-10_1537_r36sx.md`.
-- Éxito = primera consola arrancando con kernel+init propios (solo queda
-  hcboot/AVP stock, conservados por estrategia §7).
-- Fallo aislado al linuxrc (kernel idéntico a k4): diagnóstico por síntoma
-  (logo quieto=init temprano; menú sin input=cubevol; negro=hcdaemon/mounts).
+- **FASE F — TEST #12 (16:02): k6 = init propio + SWAP + logging fix.**
+  Test #11: init propio corrió (picoarch lanzado 2x, fb OK) pero murió antes
+  del core FrogUI — causa raíz probable OOM (stock activa pagefile.sys 128MB
+  vía S99app; nuestro init no). k6: swapon + log /tmp→SD + dump free/mounts +
+  stderr picoarch por iter. Éxito = menú navegable con NUESTRO init completo.
+  Ver `docs/test-runs/2026-09-10_1602_r36sx.md` (R33).
 
 ## Blocked
 

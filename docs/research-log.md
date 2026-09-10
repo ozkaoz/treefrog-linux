@@ -308,3 +308,20 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
     (INITRAMFS stock, JOYDEV, CHECK_ADC) — cero modificaciones de código fuente.
 - Siguiente: FASE F — initramfs TreeFrog PROPIO (BusyBox nuestro, montar SD,
   lanzar FrogUI directo sin initramfs stock extraído) → rootfs propio.
+
+### R33. Test #11 forense: init propio corrió; muerte OOM pre-core; k6 = swap+logging (2026-09-10 16:02)
+- Test #11 (k5 `9e078280`, init propio): pantalla TreeFrogUI sin menú. Evidencia
+  de que NUESTRO init ejecutó: picoarch_init.log 998→2398 B con 2 entradas
+  nuevas pid 1134 ppid 1104 (linuxrc nuestro es el ppid) — fb-init OK en ambas;
+  frogui_crash.log 1531→4265 B: FrogUI retro_init repetido SIN bucle de frames
+  = muerte del core tras el render init. log.txt NO rotó (stale k4).
+- Bug logging linuxrc v1: `[ -f /mnt/sdcard/log.txt ]` evaluado ANTES de montar
+  la SD → banner nunca escrito. Fix v2: log SIEMPRE en /tmp/tf-init.log,
+  promoción a SD (con rotación .prev como zhijack) tras el mount.
+- **Causa raíz probable: OOM.** La consola R36SX es RAM ≤128 MB; el flujo stock
+  S99app activa swap: `swapon /mnt/sdcard/cubegm/pagefile.sys` (128 MB, existe
+  en la SD, Dec 16 2025) ANTES de lanzar icube. Sin swap, picoarch+FrogUI mueren
+  justo tras fb-init — coincide exactamente con el síntoma (2 muertes, fb OK).
+- k6 `bea9c409` (commit 2dce2fa): linuxrc v2 = swap ON + logging/promoción +
+  dump free/mounts (K0) + tail stderr picoarch por iter. Kernel idéntico k4/k5
+  (entry 0x803e5780) — delta aislado al initramfs. Deploy 16:02, backup k5 en SD.

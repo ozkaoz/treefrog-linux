@@ -1,0 +1,33 @@
+treefrog-linux TEST #12 (2026-09-10 16:02) — k6 = init propio + SWAP + logging fix
+===============================================================================
+Kernel:  NUESTRO k6 = vmlinux.uImage sha bea9c409... (idéntico config/entry a k4/k5)
+        commit 2dce2fa, entry 0x803e5780, DTB stock, AVP stock.
+
+DIAGNÓSTICO TEST #11 (R33):
+  - Nuestro init SÍ corrió: picoarch pid 1134/ppid 1104 arrancó 2 veces con
+    fb-init OK (picoarch_init.log creció 998→2398B) pero murió ANTES de cargar
+    el core FrogUI (frogui_crash.log: retro_init repetido sin bucle de frames).
+  - CAUSA RAIZ PROBABLE: FALTA DE SWAP. La consola es RAM ≤128MB; el stock
+    activa cubegm/pagefile.sys (128MB, PRESENTE en tu SD) en S99app antes de
+    lanzar el sistema. Sin swap, picoarch+FrogUI mueren por OOM justo tras el
+    fb-init — exactamente el síntoma observado.
+  - BUG SECUNDARIO: mi log escribía a /mnt/sdcard antes de montar la SD (por
+    eso no viste el banner "treefrog-linux init" en log.txt).
+
+FIXES EN k6:
+  1. swapon pagefile.sys (como S99app stock) tras montar la SD.
+  2. Logging a /tmp SIEMPRE + promoción a SD si existe log.txt (opt-in como
+     zhijack). Ahora verás: banner, swap ON, free/mounts, iteraciones, stderr
+     de picoarch en cada muerte.
+  3. dump de free + /proc/mounts antes del loop (baseline K0).
+
+RESULTADO ESPERADO: menú TreeFrogUI navegable ARRANCADO POR NUESTRO INIT.
+  En log.txt (si existe): "=== treefrog-linux init [r36sx] ===" + "swap ON".
+  (log.txt YA EXISTE en tu SD de tests previos — el banner aparecerá.)
+
+SI FALLA OTRA VEZ: log.txt ahora tendrá TODA la cadena con el punto exacto
+  de muerte (banner → hcdaemon → sd → swap → cubevol → iter → stderr picoarch).
+
+BACKUPS EN ESTA SD (rollback 30s): k5 (1537), k4 golden (1502), stock (1317).
+
+TRAS LA PRUEBA: reinsertar SD — leo log.txt completo (ahora sí habrá datos).
