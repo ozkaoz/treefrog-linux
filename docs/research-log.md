@@ -107,3 +107,44 @@ Formato: fecha / hallazgo / evidencia (comando + archivo + output + hash).
 - dtb.bin del build == stock (SHA256 `1258f1eb...` idéntico).
 - Diferencias conocidas vs stock: entry point (0x803e3200 vs 0x803337c0) y tamaño (2.7 MB vs 3.9 MB) — el .config del stock es más completo que el kernel-squashfs.config base del SDK (probables drivers extra WiFi/BT/otras pantallas). No bloquea la primera prueba: formato, load, toolchain, DTB y cmdline son equivalentes.
 - manifest.json con git_commit `81ecf9a`, hashes y avp_entry `0xabda4000` (derivado del DTS stock; el del stock corresponde a 0xabda3000+0x1000? — ver known-gaps).
+
+## 2026-09-09 — FASE E (primer boot físico + diagnóstico)
+
+### R20. PRIMER BOOT FÍSICO DE NUESTRO KERNEL — SISTEMA COMPLETO ARRIBA
+- Deploy 19:34 → boot físico en consola R36SX (test-run 2026-09-09_1934_r36sx.md).
+- Síntoma reportado: "logo TreeFrogUI quieto ~1 min". La SD re-inspeccionada revela:
+- `log.txt` (26 KB, rotado por zhijack = boot DE HOY con NUESTRO kernel): init → hcdaemon
+  (AVP) → icube → zhijack → cubevol → picoarch+FrogUI MENÚ RENDERIZÁNDOSE (4200+ frames,
+  present_direct rv=0, driver_r36sx.so OK, audio OK).
+- `log.txt.prev` (21 KB, último boot con kernel STOCK): misma estructura exacta (mismos
+  procesos, mismos DBG lines), pero el stock pasa `core=frogui` → `core=frogshell`
+  (menú navegable). Nuestro kernel: `quit=0` eterno → **input no llega**.
+- Diferencias log stock vs nuestro: SOLO direcciones de punteros (ASLR) y el PID de mmcqd.
+  Todo lo demás idéntico → §24 comparación viva: **kernel funcionalmente equivalente al
+  stock salvo input**.
+
+### R21. Root-cause input: joydev ausente
+- `strings /mnt/g/rootfs/usr/bin/cubevol` → `/dev/input/js0..3`, `/proc/bus/input/devices`,
+  `/tmp/joy_key` (pipeline: cubevol lee /dev/input/js* → shm /tmp/joy_key → picoarch).
+- zhijack.sh (leído de la SD): "keeping the cubevol gpio -> /tmp/joy_key input pipeline up".
+- Nuestro config: `# CONFIG_INPUT_JOYDEV is not set` (base SDK kernel-squashfs.config).
+- Kernel stock: `strings vmlinux.stock.elf` → `joydev: failed to reserve new minor: %d`,
+  `&joydev->mutex`, `&joydev->wait` → joydev built-in en el stock. NO en el nuestro.
+- hc_key_adc/hc_gpio_key SÍ estaban en nuestro vmlinux (System.map f803229c0 etc.).
+- Fix: `boards/r36sx/config/r36sx.fragment.config` (`CONFIG_INPUT_JOYDEV=y`) aplicado via
+  merge_config en build-kernel.sh (verificación post-olddefconfig integrada).
+
+### R22. Rootfs stock preservado EN LA SD (descubrimiento FASE F)
+- `/mnt/g/rootfs/` contiene el rootfs ramfs stock COMPLETO (bin/linuxrc/dev/etc/usr...,
+  con "THIS_IS_NOT_YOUR_ROOT_FILESYSTEM" marker). Incluye busybox, cubevol, avpconsole,
+  getevent-class utils → insumo directo para FASE F (initramfs/rootfs TreeFrog).
+- `/mnt/g/cubegm/modules/4.4.186-release/usb_f_{mass_storage,mtp}.ko` → el stock compila
+  USB gadget funcs como MÓDULOS con vermagic 4.4.186-release (mismo que nuestro kernel:
+  los .ko podrían cargarse en nuestro kernel — pendiente de prueba).
+- Backup completo de la SD (1.1 GB, checksums críticos verificados):
+  `D:\R36SX\sd-full-backups\2026-09-09_2139_treefrog-test-sd\`.
+
+### R23. Build #2 (joydev) + deploy
+- Fragment activo verificado; uImage sha `9f5d3f9c8de334ebf27de78b7a4373c444f8ba608bdc8dc6d83013091a4f21a2`,
+  entry `0x803e4930`, 2702874 B. `strings` del vmlinux.bin: joydev presente (== stock).
+- Deploy 21:54 con backup previo en SD. Pendiente re-test físico.

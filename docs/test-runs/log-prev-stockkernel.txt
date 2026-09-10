@@ -1,0 +1,345 @@
+=== zhijack boot [r36sx] 00:00:05 ===
+icube frozen, rkgame killed
+processes at boot:
+PID   USER     COMMAND
+    1 root     init
+    2 root     [kthreadd]
+    3 root     [ksoftirqd/0]
+    4 root     [kworker/0:0]
+    5 root     [kworker/0:0H]
+    6 root     [kworker/u2:0]
+    7 root     [rcu_preempt]
+    8 root     [rcu_sched]
+    9 root     [rcu_bh]
+   10 root     [kdevtmpfs]
+   11 root     [kworker/u2:1]
+  186 root     [writeback]
+  188 root     [crypto]
+  189 root     [bioset]
+  191 root     [kblockd]
+  291 root     [rpcwork0]
+  292 root     [rpcwork1]
+  293 root     [rpcwork2]
+  294 root     [rpcwork3]
+  295 root     [rpcwork4]
+  296 root     [rpcwork5]
+  297 root     [rpcwork6]
+  298 root     [rpcwork7]
+  300 root     [kworker/0:1]
+  307 root     [kswapd0]
+  308 root     [fsnotify_mark]
+  354 root     [kworker/u2:2]
+  356 root     [kworker/u2:3]
+  370 root     [spi32766]
+  374 root     [bioset]
+  379 root     [bioset]
+  385 root     [bioset]
+  390 root     [bioset]
+  440 root     [bioset]
+  442 root     [mmcqd/0]
+  464 root     [deferwq]
+  528 root     hcdaemon
+  540 root     [kworker/0:1H]
+  544 root     /bin/sh --
+  545 root     /mnt/sdcard/cubegm/icube
+  547 root     [rkgame]
+  552 root     /bin/sh /tmp/treefrog-zhijack.sh
+  557 root     /usr/bin/cubevol
+  568 root     ps
+CPU frequency policy after performance request:
+/sys/devices/system/cpu/cpu*/cpufreq governor= cur= min= max= hwmax=
+--- iter 1: frogui ---
+DBG picoarch start: text~0x421f98 (hi if 0x2x) argv1=/mnt/sdcard/cubegm/cores/frogui_libretro.so next-bin=/mnt/sdcard/cubegm/picoarch
+DBG load_frogui_settings: filter override=0 → scale_filter=1
+DBG load_frogui_settings: quick_resume=0 autosave_autoload=0
+DBG device: R36SX panel=640x480 ui_scale=150
+DBG /proc/fb: 0 hcfb
+DBG /proc/fb: 1 hcfb
+DBG sf3000_fb_init: PRE-FBIOPUT 480x854(v480x13664) bpp=16 off=0,0
+DBG sf3000_fb_init: FBIOPAN_DISPLAY(0,0) ret=0
+DBG sf3000_fb_init: FBIOBLANK(1)=0 (0)=0
+DBG dump[fb_init/post] /dev/fb0: 720x1280(v720x2560) bpp=32 off=0,0 rot=0 line=2880 smem_start=0xaf92000 smem_len=14749264 type=0 visual=2
+DBG dump[fb_init/post] /dev/fb6: open failed (errno=2)
+DBG dump[fb_init/post] /dev/fb22: open failed (errno=2)
+DBG dump[hwdisp_init/pre] /dev/fb0: 720x1280(v720x2560) bpp=32 off=0,0 rot=0 line=2880 smem_start=0xaf92000 smem_len=14749264 type=0 visual=2
+DBG dump[hwdisp_init/pre] /dev/fb6: open failed (errno=2)
+DBG dump[hwdisp_init/pre] /dev/fb22: open failed (errno=2)
+DBG hwdisp: loaded /mnt/sdcard/cubegm/driver_r36sx.so
+DBG hwdisp: setmode=0x76aaa504 calling setmode(0,0)
+DBG hwdisp: setmode(0,0) ret=17
+DBG dump[hwdisp_init/post] /dev/fb0: 1280x720(v1280x5040) bpp=16 off=0,0 rot=0 line=2560 smem_start=0xaf92000 smem_len=14749264 type=0 visual=2
+DBG dump[hwdisp_init/post] /dev/fb6: open failed (errno=2)
+DBG dump[hwdisp_init/post] /dev/fb22: open failed (errno=2)
+DBG M1: fb_init ok
+DBG M2: sdl surface ok
+DBG A: speaker gate ON (cubegm/spk_gate.txt default)
+DBG M3: sound init done
+DBG A: clean AUDDEC/I2SO startup cycle
+DBG core symbols: video_set=0x723485a8 audio_set=0x723485c0 run=0x7234b31c load=0x7234b30c
+DBG video callback registered: core=/mnt/sdcard/cubegm/cores/frogui_libretro.so fn=0x40bcc4
+DBG alloc_config_buffer: try game-cfg=/mnt/sdcard/picoarch/cores/frogui_libretro.cfg
+DBG alloc_config_buffer: try global-cfg=/mnt/sdcard/picoarch/cores/picoarch.cfg
+DBG alloc_config_buffer: global-cfg MISS
+DBG R: plat_reinit in_rate=0 out_rate=48000
+DBG main: post-load_config scale_filter=0 scale_size=1 override=0
+DBG main: post-FrogUI-override scale_filter=0 quick_resume=0 autosave_autoload=0
+DBG M4: pre core_load
+DBG M5: core_load done
+DBG M5a: load_game_info (unzip if needed)
+DBG M5b: retro_load_game path=/mnt/sdcard/cubegm/cores/frogui_libretro.so
+DBG M5c: retro_load_game returned
+DBG M5d: sram_read
+DBG M5e: get_system_av_info
+DBG M5f: av 640x480 rate=44100 fps*100=6000, plat_reinit
+DBG R: plat_reinit in_rate=44100 out_rate=48000
+DBG M6: content loaded, entering run loop
+DBG alloc_config_buffer: try game-cfg=/mnt/sdcard/picoarch/cores/frogui_libretro.cfg
+DBG alloc_config_buffer: try global-cfg=/mnt/sdcard/picoarch/cores/picoarch.cfg
+DBG alloc_config_buffer: global-cfg MISS
+DBG retro_run begin pid=582 n=1 core=frogui quit=0
+DBG video_refresh entry pid=582 n=1 data=0x7229d008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=1 size=640x480 pitch=1280 fmt=2
+DBG blit#1: src=0x7229d008 screen=0x75432008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG driver aspect: api_arg=1 global_fullscreen=0 live_ctx=0xaf4848 live_fullscreen=15793920->0 mode=aspect-fit
+DBG present_direct#1: pre disp_frame 640x480 scale=1
+DBG present_direct#1: post rv=0
+DBG retro_run begin pid=582 n=2 core=frogui quit=0
+DBG retro_run begin pid=582 n=3 core=frogui quit=0
+DBG retro_run begin pid=582 n=4 core=frogui quit=0
+DBG retro_run begin pid=582 n=5 core=frogui quit=0
+DBG retro_run begin pid=582 n=6 core=frogui quit=0
+DBG retro_run begin pid=582 n=7 core=frogui quit=0
+DBG retro_run begin pid=582 n=8 core=frogui quit=0
+DBG retro_run begin pid=582 n=9 core=frogui quit=0
+DBG retro_run begin pid=582 n=10 core=frogui quit=0
+DBG retro_run begin pid=582 n=11 core=frogui quit=0
+DBG retro_run begin pid=582 n=12 core=frogui quit=0
+DBG retro_run begin pid=582 n=13 core=frogui quit=0
+DBG retro_run begin pid=582 n=14 core=frogui quit=0
+DBG retro_run begin pid=582 n=15 core=frogui quit=0
+DBG retro_run begin pid=582 n=16 core=frogui quit=0
+DBG retro_run begin pid=582 n=17 core=frogui quit=0
+DBG retro_run begin pid=582 n=18 core=frogui quit=0
+DBG retro_run begin pid=582 n=19 core=frogui quit=0
+DBG retro_run begin pid=582 n=20 core=frogui quit=0
+DBG retro_run begin pid=582 n=21 core=frogui quit=0
+DBG retro_run begin pid=582 n=22 core=frogui quit=0
+DBG retro_run begin pid=582 n=23 core=frogui quit=0
+DBG retro_run begin pid=582 n=24 core=frogui quit=0
+DBG retro_run begin pid=582 n=601 core=frogui quit=0
+DBG retro_run begin pid=582 n=1201 core=frogui quit=0
+DBG video_refresh entry pid=582 n=2 data=0x71de6008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=2 size=640x480 pitch=1280 fmt=2
+DBG blit#2: src=0x71de6008 screen=0x75432008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#2: pre disp_frame 640x480 scale=1
+DBG present_direct#2: post rv=0
+DBG video_refresh entry pid=582 n=3 data=0x71de6008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=3 size=640x480 pitch=1280 fmt=2
+DBG blit#3: src=0x71de6008 screen=0x75432008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#3: pre disp_frame 640x480 scale=1
+DBG present_direct#3: post rv=0
+DBG video_refresh entry pid=582 n=4 data=0x71de6008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=4 size=640x480 pitch=1280 fmt=2
+DBG blit#4: src=0x71de6008 screen=0x75432008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#4: pre disp_frame 640x480 scale=1
+DBG present_direct#4: post rv=0
+DBG video_refresh entry pid=582 n=5 data=0x7229d008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=5 size=640x480 pitch=1280 fmt=2
+DBG blit#5: src=0x7229d008 screen=0x75432008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#5: pre disp_frame 640x480 scale=1
+DBG present_direct#5: post rv=0
+DBG retro_run begin pid=582 n=1801 core=frogui quit=0
+DBG A: launcher cold tick; arming 10 x10ms
+DBG video_refresh entry pid=582 n=6 data=0x7229d008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=6 size=640x480 pitch=1280 fmt=2
+DBG blit#6: src=0x7229d008 screen=0x75432008 w=640 h=480 pitch=1280 scale_filter=0 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#6: pre disp_frame 640x480 scale=1
+DBG present_direct#6: post rv=0
+DBG A: underrun #1: had 98/480 frames (overruns=0)
+DBG A: audio idle; speaker line HIGH (silent)
+DBG retro_run begin pid=582 n=2401 core=frogui quit=0
+DBG quit: use_hwdisp=1 next_standalone=0 core_path[0]=1 rom_path[0]=1
+DBG dump[hwdisp_deinit/pre] /dev/fb0: 640x480(v640x11040) bpp=16 off=0,2400 rot=0 line=1280 smem_start=0xaf92000 smem_len=14749264 type=0 visual=2
+DBG dump[hwdisp_deinit/pre] /dev/fb6: open failed (errno=2)
+DBG dump[hwdisp_deinit/pre] /dev/fb22: open failed (errno=2)
+DBG dump[hwdisp_deinit/post-p_deinit] /dev/fb0: 640x480(v640x11040) bpp=16 off=0,2400 rot=0 line=1280 smem_start=0xaf92000 smem_len=14749264 type=0 visual=2
+DBG dump[hwdisp_deinit/post-p_deinit] /dev/fb6: open failed (errno=2)
+DBG dump[hwdisp_deinit/post-p_deinit] /dev/fb22: open failed (errno=2)
+DBG dump[hwdisp_deinit/post-dlclose] /dev/fb0: 640x480(v640x11040) bpp=16 off=0,2400 rot=0 line=1280 smem_start=0xaf92000 smem_len=14749264 type=0 visual=2
+DBG dump[hwdisp_deinit/post-dlclose] /dev/fb6: open failed (errno=2)
+DBG dump[hwdisp_deinit/post-dlclose] /dev/fb22: open failed (errno=2)
+DBG quit: hwdisp_deinit done
+DBG exec game: bin=/mnt/sdcard/cubegm/picoarch core=/mnt/sdcard/cubegm/cores/frogshell_libretro.so rom=/mnt/sdcard/cubegm/cores/frogshell_libretro.so
+DBG picoarch start: text~0x421f98 (hi if 0x2x) argv1=/mnt/sdcard/cubegm/cores/frogshell_libretro.so next-bin=/mnt/sdcard/cubegm/picoarch
+DBG device: R36SX panel=640x480 ui_scale=150
+DBG /proc/fb: 0 hcfb
+DBG /proc/fb: 1 hcfb
+DBG sf3000_fb_init: PRE-FBIOPUT 640x480(v640x11040) bpp=16 off=0,2400
+DBG sf3000_fb_init: FBIOPAN_DISPLAY(0,0) ret=0
+DBG sf3000_fb_init: FBIOBLANK(1)=0 (0)=0
+DBG dump[fb_init/post] /dev/fb0: 720x1280(v720x2560) bpp=32 off=0,0 rot=0 line=2880 smem_start=0xaf92000 smem_len=14749264 type=0 visual=2
+DBG dump[fb_init/post] /dev/fb6: open failed (errno=2)
+DBG dump[fb_init/post] /dev/fb22: open failed (errno=2)
+DBG dump[hwdisp_init/pre] /dev/fb0: 720x1280(v720x2560) bpp=32 off=0,0 rot=0 line=2880 smem_start=0xaf92000 smem_len=14749264 type=0 visual=2
+DBG dump[hwdisp_init/pre] /dev/fb6: open failed (errno=2)
+DBG dump[hwdisp_init/pre] /dev/fb22: open failed (errno=2)
+DBG hwdisp: loaded /mnt/sdcard/cubegm/driver_r36sx.so
+DBG hwdisp: setmode=0x7645e504 calling setmode(0,0)
+DBG hwdisp: setmode(0,0) ret=17
+DBG dump[hwdisp_init/post] /dev/fb0: 1280x720(v1280x5040) bpp=16 off=0,0 rot=0 line=2560 smem_start=0xaf92000 smem_len=14749264 type=0 visual=2
+DBG dump[hwdisp_init/post] /dev/fb6: open failed (errno=2)
+DBG dump[hwdisp_init/post] /dev/fb22: open failed (errno=2)
+DBG M1: fb_init ok
+DBG M2: sdl surface ok
+DBG M3: sound init done
+DBG A: speaker gate ON (cubegm/spk_gate.txt default)
+DBG A: clean AUDDEC/I2SO startup cycle
+DBG core symbols: video_set=0x71e09530 audio_set=0x71e09548 run=0x71e09d14 load=0x71e09cf0
+DBG video callback registered: core=/mnt/sdcard/cubegm/cores/frogshell_libretro.so fn=0x40bcc4
+DBG alloc_config_buffer: try game-cfg=/mnt/sdcard/picoarch/cores/frogshell_libretro.cfg
+DBG alloc_config_buffer: try global-cfg=/mnt/sdcard/picoarch/cores/picoarch.cfg
+DBG alloc_config_buffer: global-cfg MISS
+DBG R: plat_reinit in_rate=0 out_rate=48000
+DBG main: post-load_config scale_filter=0 scale_size=1 override=0
+DBG load_frogui_settings: filter override=0 → scale_filter=1
+DBG load_frogui_settings: quick_resume=0 autosave_autoload=0
+DBG apply_brightness: level=75 -> 153
+DBG main: post-FrogUI-override scale_filter=1 quick_resume=0 autosave_autoload=0
+DBG M4: pre core_load
+DBG M5: core_load done
+DBG M5a: load_game_info (unzip if needed)
+DBG M5b: retro_load_game path=/mnt/sdcard/cubegm/cores/frogshell_libretro.so
+DBG M5c: retro_load_game returned
+DBG M5d: sram_read
+DBG M5e: get_system_av_info
+DBG M5f: av 640x480 rate=44100 fps*100=6000, plat_reinit
+DBG R: plat_reinit in_rate=44100 out_rate=48000
+DBG M6: content loaded, entering run loop
+DBG alloc_config_buffer: try game-cfg=/mnt/sdcard/picoarch/cores/frogshell_libretro.cfg
+DBG alloc_config_buffer: try global-cfg=/mnt/sdcard/picoarch/cores/picoarch.cfg
+DBG alloc_config_buffer: global-cfg MISS
+DBG retro_run begin pid=582 n=1 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=1 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=1 size=640x480 pitch=1280 fmt=2
+DBG blit#1: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG driver aspect: api_arg=1 global_fullscreen=0 live_ctx=0x671800 live_fullscreen=15793920->0 mode=aspect-fit
+DBG present_direct#1: pre disp_frame 640x480 scale=1
+DBG present_direct#1: post rv=0
+DBG retro_run begin pid=582 n=2 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=2 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=2 size=640x480 pitch=1280 fmt=2
+DBG blit#2: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#2: pre disp_frame 640x480 scale=1
+DBG present_direct#2: post rv=0
+DBG retro_run begin pid=582 n=3 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=3 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=3 size=640x480 pitch=1280 fmt=2
+DBG blit#3: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#3: pre disp_frame 640x480 scale=1
+DBG present_direct#3: post rv=0
+DBG retro_run begin pid=582 n=4 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=4 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=4 size=640x480 pitch=1280 fmt=2
+DBG blit#4: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#4: pre disp_frame 640x480 scale=1
+DBG present_direct#4: post rv=0
+DBG retro_run begin pid=582 n=5 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=5 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=5 size=640x480 pitch=1280 fmt=2
+DBG blit#5: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#5: pre disp_frame 640x480 scale=1
+DBG present_direct#5: post rv=0
+DBG retro_run begin pid=582 n=6 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=6 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=6 size=640x480 pitch=1280 fmt=2
+DBG blit#6: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#6: pre disp_frame 640x480 scale=1
+DBG present_direct#6: post rv=0
+DBG retro_run begin pid=582 n=7 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=7 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=7 size=640x480 pitch=1280 fmt=2
+DBG blit#7: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#7: pre disp_frame 640x480 scale=1
+DBG present_direct#7: post rv=0
+DBG retro_run begin pid=582 n=8 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=8 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=8 size=640x480 pitch=1280 fmt=2
+DBG blit#8: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG present_direct#8: pre disp_frame 640x480 scale=1
+DBG present_direct#8: post rv=0
+DBG retro_run begin pid=582 n=9 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=9 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=9 size=640x480 pitch=1280 fmt=2
+DBG blit#9: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=10 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=10 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=10 size=640x480 pitch=1280 fmt=2
+DBG blit#10: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=11 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=11 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=11 size=640x480 pitch=1280 fmt=2
+DBG blit#11: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=12 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=12 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=12 size=640x480 pitch=1280 fmt=2
+DBG blit#12: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=13 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=13 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=13 size=640x480 pitch=1280 fmt=2
+DBG blit#13: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=14 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=14 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=14 size=640x480 pitch=1280 fmt=2
+DBG blit#14: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=15 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=15 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=15 size=640x480 pitch=1280 fmt=2
+DBG blit#15: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=16 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=16 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=16 size=640x480 pitch=1280 fmt=2
+DBG blit#16: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=17 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=17 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=17 size=640x480 pitch=1280 fmt=2
+DBG blit#17: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=18 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=18 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=18 size=640x480 pitch=1280 fmt=2
+DBG blit#18: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=19 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=19 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=19 size=640x480 pitch=1280 fmt=2
+DBG blit#19: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=20 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=20 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=20 size=640x480 pitch=1280 fmt=2
+DBG blit#20: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=21 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=21 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=21 size=640x480 pitch=1280 fmt=2
+DBG blit#21: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=22 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=22 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=22 size=640x480 pitch=1280 fmt=2
+DBG blit#22: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=23 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=23 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=23 size=640x480 pitch=1280 fmt=2
+DBG blit#23: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=24 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=24 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG plat_video_process pid=582 n=24 size=640x480 pitch=1280 fmt=2
+DBG blit#24: src=0x71c34008 screen=0x73cda008 w=640 h=480 pitch=1280 scale_filter=1 scale_size=1 use_hw=1 PANEL=640x480
+DBG retro_run begin pid=582 n=601 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=601 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG retro_run begin pid=582 n=1201 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=1201 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG retro_run begin pid=582 n=1801 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=1801 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG retro_run begin pid=582 n=2401 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=2401 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG retro_run begin pid=582 n=3001 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=3001 data=0x71c34008 size=640x480 pitch=1280 quit=0
+DBG retro_run begin pid=582 n=3601 core=frogshell quit=0
+DBG video_refresh entry pid=582 n=3601 data=0x71c34008 size=640x480 pitch=1280 quit=0

@@ -44,15 +44,38 @@ fi
 KERNEL_CONFIG="$VENDOR_BOARD/kernel-configs/$KERNEL_VERSION/kernel-$CONFIG_VARIANT.config"
 [ -f "$KERNEL_CONFIG" ] || { echo "ERROR: no existe $KERNEL_CONFIG"; exit 1; }
 
+# config fragment de la board (opcional): se aplica via merge_config (flujo Buildroot
+# BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES). Cada línea del fragment DEBE tener evidencia
+# documentada en boards/<board>/config/ y docs/boards/<board>.md.
+FRAGMENT=""
+if [ -f "$ROOT/boards/$DTS_NAME/config/$DTS_NAME.fragment.config" ]; then
+  FRAGMENT="$ROOT/boards/$DTS_NAME/config/$DTS_NAME.fragment.config"
+fi
+
 mkdir -p "$BOARD_OUT"
 cd "$KERNEL_DIR"
 
 echo "== preparando config (kernel-$CONFIG_VARIANT.config) =="
 cp "$KERNEL_CONFIG" .config
+if [ -n "$FRAGMENT" ]; then
+  echo "  + fragment: $FRAGMENT"
+  # merge_config del kernel: aplica el fragment sobre .config con 'make alldefconfig' final
+  bash scripts/kconfig/merge_config.sh -m .config "$FRAGMENT"
+fi
 # resolver simbolos nuevos (ej: RC_KEYMAP choice del hcdrivers) con defaults,
 # igual que hace Buildroot (flujo vendor); gcc host >=10 necesita -fcommon (dtc 4.4)
-HOSTFLAGS='HOSTCFLAGS="-O2 -fcommon -std=gnu89"'
 make ARCH=$ARCH CROSS_COMPILE="$CROSS_COMPILE" olddefconfig 2>&1 | tail -2
+if [ -n "$FRAGMENT" ]; then
+  # verificar que las opciones del fragment quedaron activas (merge_config + olddefconfig
+  # pueden revertir dependencias no satisfechas)
+  echo "  verificación del fragment:"
+  while IFS= read -r line; do
+    case "$line" in ''|\#*) continue;; esac
+    opt="${line%%=*}"
+    grep -q "^$line\$" .config || echo "    ADVERTENCIA: $line no quedó activo tras olddefconfig"
+    grep -q "^$line\$" .config && echo "    ok: $line"
+  done < "$FRAGMENT"
+fi
 make ARCH=$ARCH CROSS_COMPILE="$CROSS_COMPILE" HOSTCFLAGS="-O2 -fcommon -std=gnu89" prepare scripts 2>&1 | tail -2
 
 echo "== fixup load address desde DTS (linux-ext-fixup-load-addr.mk) =="
@@ -144,6 +167,12 @@ GCC_VER=$("$TOOLCHAIN_BIN/mips-mti-linux-gnu-gcc" -dumpversion | head -1)
   echo "  \"phys_offset\": \"$PHYS_OFF\","
   echo "  \"avp_entry\": \"$AVP_ENTRY\","
   echo "  \"config_sha256\": \"$(sha256sum "$KERNEL_CONFIG" | awk '{print $1}')\","
+  if [ -n "$FRAGMENT" ]; then
+    echo "  \"config_fragment_sha256\": \"$(sha256sum "$FRAGMENT" | awk '{print $1}')\","
+  fi
+  if [ -n "$FRAGMENT" ]; then
+    echo "  \"config_fragment_sha256\": \"$(sha256sum "$FRAGMENT" | awk '{print $1}')\","
+  fi
   echo "  \"dts_sha256\": \"$(sha256sum "$DTS_FILE" | awk '{print $1}')\","
   echo "  \"dtb_sha256\": \"$(sha256sum "$BOARD_OUT/dtb.bin" | awk '{print $1}')\","
   echo "  \"vmlinux_bin_sha256\": \"$(sha256sum "$BOARD_OUT/vmlinux.bin" | awk '{print $1}')\","

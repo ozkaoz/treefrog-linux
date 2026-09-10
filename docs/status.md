@@ -22,16 +22,19 @@ Actualizado: 2026-09-09 19:35 (FASE A/B/C/D completadas — deploy físico reali
 
 ## In progress
 
-- **PRUEBA FÍSICA EN CONSOLA:** insertar la SD en la R36SX y arrancar. El usuario debe
-  hacerlo físicamente y reportar el resultado (boot log / síntomas) para completar el test-run.
+- **RE-TEST kernel #2 (joydev):** deployado 21:54 (sha `9f5d3f9c...`). El usuario debe
+  probar en consola. Esperado: menú TreeFrogUI navegable con botones.
 
 ## Blocked
 
-- (nada técnico; solo falta la acción física del usuario)
+- (nada técnico; esperando prueba física del kernel #2)
 
 ## Missing
 
-- `docs/known-gaps.md` (gaps 1,2,4,5,6,7,9 cerrados para R36SX; pendientes: config exacto stock, validación CRC hcboot — se resolverá empíricamente con este primer boot, DTB resto de consolas, licencia blobs .o).
+- `docs/known-gaps.md` (gaps 1,2,4,5,6,7,9 cerrados para R36SX; gap #3 parcialmente respondido:
+  hcboot ACEPTA nuestro uImage sin validación que lo rechace — booteó 2 veces).
+- Pendiente: config exacto stock (más opciones que joydev pueden diferir — se iterará por
+  evidencia), licencia blobs .o.
 
 ## Next
 
@@ -43,13 +46,15 @@ Actualizado: 2026-09-09 19:35 (FASE A/B/C/D completadas — deploy físico reali
 
 ## Last known bootable commit
 
-- (pendiente de la prueba física; candidato: 81ecf9a con out/r36sx, deployado 2026-09-09 19:34)
+- **c4db33c** (kernel #2 con joydev, deployado 21:54, PENDIENTE de confirmación física).
+  Boot anterior confirmado físicamente: 81ecf9a (kernel #1 — sistema completo arriba,
+  menú renderizado, input muerto por falta de joydev; test-run 1934).
 
 ## Last tested board
 
-- R36SX (deploy en SD realizado; boot físico pendiente)
+- R36SX (2 boots físicos con kernels propios; diagnóstico completo en test-runs/)
 
 ## Last test result
 
-- Deploy OK: kernel nuestro en SD, checksums verificados, backup stock disponible para rollback.
-  Boot físico: PENDIENTE (requiere acción del usuario).
+- Kernel #1 (81ecf9a): BOOT OK, menú renderizado, input muerto (joydev) → fix aplicado.
+- Kernel #2 (c4db33c + fragment joydev, `9f5d3f9c...`): deployado, esperando re-test físico.
